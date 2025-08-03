@@ -1,0 +1,927 @@
+{% doc %}
+  @prompt
+    make a normal color swatch for the website, it should take the all color varient option from product data and show also image in color and add label of color and if user click on any color then show the color name to the next of the color lablel, ok but also take the  color as given name where as not used any image on that color, make it more better style of colors tab and border color should be as color therir color
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-product-color-swatch-container-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    gap: {{ block.settings.container_spacing }}px;
+    padding: {{ block.settings.container_padding }}px;
+  }
+
+  .ai-color-label-section-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: {{ block.settings.label_spacing }}px;
+  }
+
+  .ai-color-label-{{ ai_gen_id }} {
+    font-size: {{ block.settings.label_font_size }}px;
+    color: {{ block.settings.label_color }};
+    font-weight: {{ block.settings.label_font_weight }};
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .ai-selected-color-name-{{ ai_gen_id }} {
+    font-size: {{ block.settings.selected_font_size }}px;
+    color: {{ block.settings.selected_color }};
+    font-weight: {{ block.settings.selected_font_weight }};
+    padding: 4px 12px;
+    background-color: {{ block.settings.selected_bg_color }};
+    border-radius: 20px;
+    border: 1px solid {{ block.settings.selected_border_color }};
+    min-width: 80px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .ai-color-swatches-{{ ai_gen_id }} {
+    display: flex;
+    flex-wrap: wrap;
+    gap: {{ block.settings.swatch_spacing }}px;
+    align-items: center;
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }} {
+    position: relative;
+    width: {{ block.settings.swatch_size }}px;
+    height: {{ block.settings.swatch_size }}px;
+    border-radius: {{ block.settings.border_radius }}px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: {{ block.settings.border_width }}px solid;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }}:hover {
+    transform: translateY(-2px) scale({{ block.settings.hover_scale }});
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    z-index: 2;
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }}:focus {
+    outline: 3px solid {{ block.settings.focus_color }};
+    outline-offset: 3px;
+    z-index: 3;
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }}.selected {
+    transform: translateY(-3px) scale({{ block.settings.selected_scale }});
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    z-index: 4;
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }}.selected::after {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border: {{ block.settings.selected_ring_width }}px solid {{ block.settings.selected_ring_color }};
+    border-radius: calc({{ block.settings.border_radius }}px + 4px);
+    pointer-events: none;
+  }
+
+  .ai-color-swatch-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ai-color-swatch-color-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: {{ block.settings.color_text_size }}px;
+    color: {{ block.settings.color_text_color }};
+    font-weight: {{ block.settings.color_text_weight }};
+    text-align: center;
+    line-height: 1.2;
+    padding: 4px;
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  .ai-color-swatch-color-{{ ai_gen_id }}::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .ai-color-swatch-tooltip-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, {{ block.settings.tooltip_bg_color }}, {{ block.settings.tooltip_bg_color }}dd);
+    color: {{ block.settings.tooltip_text_color }};
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+  }
+
+  .ai-color-swatch-tooltip-{{ ai_gen_id }}::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: {{ block.settings.tooltip_bg_color }};
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }}:hover .ai-color-swatch-tooltip-{{ ai_gen_id }} {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-4px);
+  }
+
+  .ai-color-swatch-checkmark-{{ ai_gen_id }} {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    background-color: {{ block.settings.checkmark_bg_color }};
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }}.selected .ai-color-swatch-checkmark-{{ ai_gen_id }} {
+    opacity: 1;
+  }
+
+  .ai-color-swatch-checkmark-{{ ai_gen_id }} svg {
+    width: 10px;
+    height: 10px;color: {{ block.settings.checkmark_color }};
+  }
+
+  .ai-unavailable-overlay-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }}.unavailable {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }}.unavailable .ai-unavailable-overlay-{{ ai_gen_id }} {
+    opacity: 1;
+  }
+
+  .ai-color-swatch-{{ ai_gen_id }}.unavailable::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background-color: #ff4444;
+    transform: translateY(-50%) rotate(-45deg);
+    z-index: 5;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-color-swatch-{{ ai_gen_id }} {
+      width: {{ block.settings.swatch_size | times: 0.85 }}px;
+      height: {{ block.settings.swatch_size | times: 0.85 }}px;
+    }
+    
+    .ai-color-swatches-{{ ai_gen_id }} {
+      gap: {{ block.settings.swatch_spacing | times: 0.8 }}px;
+    }
+
+    .ai-color-swatch-color-{{ ai_gen_id }} {
+      font-size: {{ block.settings.color_text_size | times: 0.8 }}px;
+    }
+
+    .ai-selected-color-name-{{ ai_gen_id }} {
+      font-size: {{ block.settings.selected_font_size | times: 0.9 }}px;
+      padding: 3px 10px;
+      min-width: 70px;
+    }
+  }
+{% endstyle %}
+
+<product-color-swatch-{{ ai_gen_id }}
+  class="ai-product-color-swatch-container-{{ ai_gen_id }}"
+  data-product-id="{{ product.id }}"
+  {{ block.shopify_attributes }}
+>
+  {% if product.options contains 'Color' or product.options contains 'Colour' %}
+    {% assign color_option_index = 0 %}
+    {% for option in product.options %}
+      {% assign option_downcase = option | downcase %}
+      {% if option_downcase contains 'color' or option_downcase contains 'colour' %}
+        {% assign color_option_index = forloop.index0 %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+
+    <div class="ai-color-label-section-{{ ai_gen_id }}">
+      <span class="ai-color-label-{{ ai_gen_id }}">{{ block.settings.color_label }}</span>
+      <span class="ai-selected-color-name-{{ ai_gen_id }}" id="selected-color-{{ ai_gen_id }}">
+        {% if product.selected_variant %}
+          {{ product.selected_variant.options[color_option_index] }}
+        {% else %}
+          {{ product.variants.first.options[color_option_index] }}
+        {% endif %}
+      </span>
+    </div>
+
+    <div class="ai-color-swatches-{{ ai_gen_id }}">
+      {% assign color_values = '' %}
+      {% for variant in product.variants %}
+        {% assign color_value = variant.options[color_option_index] %}
+        {% unless color_values contains color_value %}
+          {% assign color_values = color_values | append: color_value | append: ',' %}
+          
+          {% assign is_selected = false %}
+          {% if product.selected_variant and product.selected_variant.options[color_option_index] == color_value %}
+            {% assign is_selected = true %}
+          {% elsif product.selected_variant == null and forloop.first %}
+            {% assign is_selected = true %}
+          {% endif %}
+
+          {% assign color_hex = null %}
+          {% assign border_color = null %}
+          {% assign color_value_downcase = color_value | downcase %}
+          {% case color_value_downcase %}
+            {% when 'red' %}
+              {% assign color_hex = '#FF0000' %}
+              {% assign border_color = '#CC0000' %}
+            {% when 'blue' %}
+              {% assign color_hex = '#0000FF' %}
+              {% assign border_color = '#0000CC' %}
+            {% when 'green' %}
+              {% assign color_hex = '#008000' %}
+              {% assign border_color = '#006600' %}
+            {% when 'yellow' %}
+              {% assign color_hex = '#FFFF00' %}
+              {% assign border_color = '#CCCC00' %}
+            {% when 'orange' %}
+              {% assign color_hex = '#FFA500' %}
+              {% assign border_color = '#CC8400' %}
+            {% when 'purple' %}
+              {% assign color_hex = '#800080' %}
+              {% assign border_color = '#660066' %}
+            {% when 'pink' %}
+              {% assign color_hex = '#FFC0CB' %}
+              {% assign border_color = '#FF9AAA' %}
+            {% when 'brown' %}
+              {% assign color_hex = '#A52A2A' %}
+              {% assign border_color = '#8B2222' %}
+            {% when 'black' %}
+              {% assign color_hex = '#000000' %}
+              {% assign border_color = '#333333' %}
+            {% when 'white' %}
+              {% assign color_hex = '#FFFFFF' %}
+              {% assign border_color = '#DDDDDD' %}
+            {% when 'gray' or 'grey' %}
+              {% assign color_hex = '#808080' %}
+              {% assign border_color = '#666666' %}
+            {% when 'navy' %}
+              {% assign color_hex = '#000080' %}
+              {% assign border_color = '#000066' %}
+            {% when 'beige' %}
+              {% assign color_hex = '#F5F5DC' %}
+              {% assign border_color = '#E6E6C7' %}
+            {% when 'gold' %}
+              {% assign color_hex = '#FFD700' %}
+              {% assign border_color = '#E6C200' %}
+            {% when 'silver' %}
+              {% assign color_hex = '#C0C0C0' %}
+              {% assign border_color = '#A0A0A0' %}
+            {% when 'maroon' %}
+              {% assign color_hex = '#800000' %}
+              {% assign border_color = '#660000' %}
+            {% when 'olive' %}
+              {% assign color_hex = '#808000' %}
+              {% assign border_color = '#666600' %}
+            {% when 'lime' %}
+              {% assign color_hex = '#00FF00' %}
+              {% assign border_color = '#00CC00' %}
+            {% when 'aqua' or 'cyan' %}
+              {% assign color_hex = '#00FFFF' %}
+              {% assign border_color = '#00CCCC' %}
+            {% when 'teal' %}
+              {% assign color_hex = '#008080' %}
+              {% assign border_color = '#006666' %}
+            {% when 'fuchsia' or 'magenta' %}
+              {% assign color_hex = '#FF00FF' %}
+              {% assign border_color = '#CC00CC' %}
+            {% when 'coral' %}
+              {% assign color_hex = '#FF7F50' %}
+              {% assign border_color = '#E6653F' %}
+            {% when 'salmon' %}
+              {% assign color_hex = '#FA8072' %}
+              {% assign border_color = '#E16B5A' %}
+            {% when 'khaki' %}
+              {% assign color_hex = '#F0E68C' %}
+              {% assign border_color = '#D7CD73' %}
+            {% when 'violet' %}
+              {% assign color_hex = '#EE82EE' %}
+              {% assign border_color = '#D56BD5' %}
+            {% when 'indigo' %}
+              {% assign color_hex = '#4B0082' %}
+              {% assign border_color = '#3D006B' %}
+            {% when 'turquoise' %}
+              {% assign color_hex = '#40E0D0' %}
+              {% assign border_color = '#33C7B7' %}
+            {% when 'tan' %}
+              {% assign color_hex = '#D2B48C' %}
+              {% assign border_color = '#B99B73' %}
+            {% when 'cream' %}
+              {% assign color_hex = '#FFFDD0' %}
+              {% assign border_color = '#E6E4B7' %}
+            {% when 'rose' %}
+              {% assign color_hex = '#FF007F' %}
+              {% assign border_color = '#E60066' %}
+            {% when 'mint' %}
+              {% assign color_hex = '#98FB98' %}
+              {% assign border_color = '#7FE27F' %}
+            {% when 'lavender' %}
+              {% assign color_hex = '#E6E6FA' %}
+              {% assign border_color = '#CDCDE1' %}
+            {% when 'peach' %}
+              {% assign color_hex = '#FFCBA4' %}
+              {% assign border_color = '#E6B28B' %}
+          {% endcase %}
+
+          {% assign variant_available = false %}
+          {% for check_variant in product.variants %}
+            {% if check_variant.options[color_option_index] == color_value and check_variant.available %}
+              {% assign variant_available = true %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+
+          <button
+            class="ai-color-swatch-{{ ai_gen_id }} {% if is_selected %}selected{% endif %} {% unless variant_available %}unavailable{% endunless %}"
+            data-color="{{ color_value | escape }}"
+            data-variant-id="{{ variant.id }}"
+            aria-label="Select color {{ color_value }}"
+            type="button"
+            style="border-color: {% if border_color %}{{ border_color }}{% else %}{{ block.settings.fallback_border_color }}{% endif %};"
+            {% unless variant_available %}disabled{% endunless %}
+          >
+            {% if variant.featured_image and block.settings.prefer_images %}
+              <img
+                src="{{ variant.featured_image | image_url: width: 100 }}"
+                alt="{{ color_value | escape }}"
+                class="ai-color-swatch-image-{{ ai_gen_id }}"
+                loading="lazy"
+                width="100"
+                height="100"
+              >
+            {% elsif color_hex %}
+              <div 
+                class="ai-color-swatch-color-{{ ai_gen_id }}"
+                style="background: linear-gradient(135deg, {{ color_hex }}, {% if border_color %}{{ border_color }}{% else %}{{ color_hex }}{% endif %});"
+              >
+                {% if block.settings.show_color_names %}
+                  {% assign display_text = color_value %}{% if color_value.size > 8 %}
+                    {% assign display_text = color_value | truncate: 6, '' %}
+                  {% endif %}
+                  <span style="color: {% if color_value_downcase == 'white' or color_value_downcase == 'yellow' or color_value_downcase == 'lime' or color_value_downcase == 'cyan' or color_value_downcase == 'aqua' or color_value_downcase == 'beige' or color_value_downcase == 'cream' or color_value_downcase == 'khaki' or color_value_downcase == 'lavender' %}#000000{% else %}{{ block.settings.color_text_color }}{% endif %}; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">{{ display_text }}</span>
+                {% endif %}
+              </div>
+            {% elsif variant.featured_image %}
+              <img
+                src="{{ variant.featured_image | image_url: width: 100 }}"
+                alt="{{ color_value | escape }}"
+                class="ai-color-swatch-image-{{ ai_gen_id }}"
+                loading="lazy"
+                width="100"
+                height="100"
+              >
+            {% else %}
+              <div 
+                class="ai-color-swatch-color-{{ ai_gen_id }}"
+                style="background: linear-gradient(135deg, {{ block.settings.fallback_bg_color }}, {{ block.settings.fallback_border_color }});"
+              >
+                {% assign display_text = color_value %}
+                {% if color_value.size > 8 %}
+                  {% assign display_text = color_value | truncate: 6, '' %}
+                {% endif %}
+                <span style="text-shadow: 0 1px 2px rgba(0,0,0,0.3);">{{ display_text }}</span>
+              </div>
+            {% endif %}
+
+            {% if block.settings.show_checkmark %}
+              <div class="ai-color-swatch-checkmark-{{ ai_gen_id }}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20,6 9,17 4,12"></polyline>
+                </svg>
+              </div>
+            {% endif %}
+
+            {% unless variant_available %}
+              <div class="ai-unavailable-overlay-{{ ai_gen_id }}"></div>
+            {% endunless %}
+
+            {% if block.settings.show_tooltips %}
+              <span class="ai-color-swatch-tooltip-{{ ai_gen_id }}">
+                {{ color_value }}{% unless variant_available %} - Unavailable{% endunless %}
+              </span>
+            {% endif %}
+          </button>
+        {% endunless %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="ai-color-label-section-{{ ai_gen_id }}">
+      <span class="ai-color-label-{{ ai_gen_id }}">No color variants available for this product</span>
+    </div>
+  {% endif %}
+</product-color-swatch-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class ProductColorSwatch{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.selectedSwatch = null;
+        this.selectedColorName = null;
+      }
+
+      connectedCallback() {
+        this.swatches = this.querySelectorAll('.ai-color-swatch-{{ ai_gen_id }}:not(.unavailable)');
+        this.selectedColorName = this.querySelector('#selected-color-{{ ai_gen_id }}');
+        this.setupEventListeners();
+        this.initializeSelected();
+      }
+
+      initializeSelected() {
+        const selectedSwatch = this.querySelector('.ai-color-swatch-{{ ai_gen_id }}.selected');
+        if (selectedSwatch) {
+          this.selectedSwatch = selectedSwatch;
+        }
+      }
+
+      setupEventListeners() {
+        this.swatches.forEach((swatch) => {
+          swatch.addEventListener('click', (event) => {
+            this.selectSwatch(event.currentTarget);
+          });
+
+          swatch.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              this.selectSwatch(event.currentTarget);
+            }
+          });
+        });
+      }
+
+      selectSwatch(swatch) {
+        if (swatch.classList.contains('unavailable')) {
+          return;
+        }
+
+        if (this.selectedSwatch) {
+          this.selectedSwatch.classList.remove('selected');
+        }
+
+        swatch.classList.add('selected');
+        this.selectedSwatch = swatch;
+
+        const colorValue = swatch.dataset.color;
+        const variantId = swatch.dataset.variantId;
+
+        if (this.selectedColorName) {
+          this.selectedColorName.textContent = colorValue;this.selectedColorName.style.transform = 'scale(1.05)';
+          setTimeout(() => {
+            this.selectedColorName.style.transform = 'scale(1)';
+          }, 200);
+        }
+
+        this.dispatchEvent(new CustomEvent('colorSelected', {
+          detail: {
+            color: colorValue,
+            variantId: variantId,
+            element: swatch
+          },
+          bubbles: true
+        }));
+
+        this.updateProductVariant(variantId);
+      }
+
+      updateProductVariant(variantId) {
+        const productForm = document.querySelector(`form[action*="/cart/add"][data-product-id="${this.dataset.productId}"]`);
+        if (productForm) {
+          const variantInput = productForm.querySelector('input[name="id"]');
+          if (variantInput) {
+            variantInput.value = variantId;
+          }
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set('variant', variantId);
+        const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+
+    customElements.define('product-color-swatch-{{ ai_gen_id }}', ProductColorSwatch{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Product Color Swatch",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "container_padding",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Container padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "container_spacing",
+      "min": 8,
+      "max": 32,
+      "step": 4,
+      "unit": "px",
+      "label": "Section spacing",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "label_spacing",
+      "min": 4,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "label": "Label bottom spacing",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "swatch_spacing",
+      "min": 4,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Spacing between swatches",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Color Label"
+    },
+    {
+      "type": "text",
+      "id": "color_label",
+      "label": "Color label text",
+      "default": "Color"
+    },
+    {
+      "type": "range",
+      "id": "label_font_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Label font size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "label_font_weight",
+      "label": "Label font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Label color",
+      "default": "#333333"
+    },
+    {
+      "type": "header",
+      "content": "Selected Color Name"
+    },
+    {
+      "type": "range",
+      "id": "selected_font_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Selected color font size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "selected_font_weight",
+      "label": "Selected color font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "color",
+      "id": "selected_color",
+      "label": "Selected color text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "selected_bg_color",
+      "label": "Selected color background",
+      "default": "#f8f8f8"
+    },
+    {
+      "type": "color",
+      "id": "selected_border_color",
+      "label": "Selected color border",
+      "default": "#e0e0e0"
+    },
+    {
+      "type": "header",
+      "content": "Swatch Style"
+    },
+    {
+      "type": "range",
+      "id": "swatch_size",
+      "min": 30,
+      "max": 80,
+      "step": 5,
+      "unit": "px",
+      "label": "Swatch size",
+      "default": 45
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 2
+    },
+    {
+      "type": "color",
+      "id": "fallback_border_color",
+      "label": "Fallback border color",
+      "default": "#cccccc"
+    },
+    {
+      "type": "header",
+      "content": "Color Display"
+    },
+    {
+      "type": "checkbox",
+      "id": "prefer_images",
+      "label": "Prefer variant images over color swatches",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_color_names",
+      "label": "Show color names on color swatches",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "color_text_size",
+      "min": 8,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "label": "Color text size",
+      "default": 10
+    },
+    {
+      "type": "select",
+      "id": "color_text_weight",
+      "label": "Color text weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semi Bold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "color",
+      "id": "color_text_color",
+      "label": "Color text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "fallback_bg_color",
+      "label": "Fallback background color",
+      "default": "#f4f4f4"
+    },
+    {
+      "type": "header",
+      "content": "Hover Effects"
+    },
+    {
+      "type": "range",
+      "id": "hover_scale",
+      "min": 1,
+      "max": 1.5,
+      "step": 0.1,
+      "label": "Hover scale",
+      "default": 1.1
+    },
+    {
+      "type": "header",
+      "content": "Selection Style"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_checkmark",
+      "label": "Show checkmark on selected color",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "selected_scale",
+      "min": 1,
+      "max": 1.5,
+      "step": 0.1,
+      "label": "Selected scale",
+      "default": 1.2
+    },
+    {
+      "type": "range",
+      "id": "selected_ring_width",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "unit": "px",
+      "label": "Selected ring width",
+      "default": 3
+    },
+    {
+      "type": "color",
+      "id": "selected_ring_color",
+      "label": "Selected ring color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "focus_color",
+      "label": "Focus outline color",
+      "default": "#007acc"
+    },
+    {
+      "type": "color",
+      "id": "checkmark_bg_color",
+      "label": "Checkmark background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "checkmark_color",
+      "label": "Checkmark color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Tooltips"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tooltips",
+      "label": "Show color name tooltips on hover",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "tooltip_bg_color",
+      "label": "Tooltip background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "tooltip_text_color",
+      "label": "Tooltip text color",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Color Swatch"
+    }
+  ]
+}
+{% endschema %}

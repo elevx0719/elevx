@@ -1,0 +1,513 @@
+{% doc %}
+  @prompt
+    make a normal color swatch for the website, it should take the all color varient option from product data and show also image in color and add label of color and if user click on any color then show the color name to the next of the color lablel and take the color (according to the name )whereas not using image
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-color-swatch-container-{{ ai_gen_id }} {
+    margin: {{ block.settings.margin_top }}px 0 {{ block.settings.margin_bottom }}px;
+  }
+
+  .ai-color-swatch-label-{{ ai_gen_id }} {
+    font-size: {{ block.settings.label_font_size }}px;
+    color: {{ block.settings.label_color }};
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .ai-color-swatch-selected-{{ ai_gen_id }} {
+    color: {{ block.settings.selected_color }};
+    font-weight: 600;
+  }
+
+  .ai-color-swatch-grid-{{ ai_gen_id }} {
+    display: flex;
+    flex-wrap: wrap;
+    gap: {{ block.settings.swatch_spacing }}px;
+  }
+
+  .ai-color-swatch-item-{{ ai_gen_id }} {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .ai-color-swatch-button-{{ ai_gen_id }} {
+    width: {{ block.settings.swatch_size }}px;
+    height: {{ block.settings.swatch_size }}px;
+    border: {{ block.settings.border_width }}px solid {{ block.settings.border_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    background: none;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .ai-color-swatch-button-{{ ai_gen_id }}:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .ai-color-swatch-button-{{ ai_gen_id }}.selected {
+    border-color: {{ block.settings.selected_border_color }};
+    border-width: {{ block.settings.selected_border_width }}px;
+    box-shadow: 0 0 0 2px {{ block.settings.selected_border_color }};
+  }
+
+  .ai-color-swatch-color-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: calc({{ block.settings.border_radius }}px - {{ block.settings.border_width }}px);
+  }
+
+  .ai-color-swatch-tooltip-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: {{ block.settings.tooltip_bg_color }};
+    color: {{ block.settings.tooltip_text_color }};
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .ai-color-swatch-tooltip-{{ ai_gen_id }}::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent;
+    border-top-color: {{ block.settings.tooltip_bg_color }};
+  }
+
+  .ai-color-swatch-item-{{ ai_gen_id }}:hover .ai-color-swatch-tooltip-{{ ai_gen_id }} {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-color-swatch-button-{{ ai_gen_id }} {
+      width: {{ block.settings.swatch_size | times: 0.8 }}px;
+      height: {{ block.settings.swatch_size | times: 0.8 }}px;
+    }
+  }
+{% endstyle %}
+
+<color-swatch-selector-{{ ai_gen_id }}
+  class="ai-color-swatch-container-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+  data-product-id="{{ product.id }}"
+>
+  <div class="ai-color-swatch-label-{{ ai_gen_id }}">
+    {{ block.settings.label_text }}
+    <span class="ai-color-swatch-selected-{{ ai_gen_id }}" data-selected-color></span>
+  </div>
+
+  <div class="ai-color-swatch-grid-{{ ai_gen_id }}">
+    {% assign color_option = null %}
+    {% for option in product.options_with_values %}
+      {% assign option_name_downcase = option.name | downcase %}
+      {% if option_name_downcase contains 'color' or option_name_downcase contains 'colour' %}
+        {% assign color_option = option %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+
+    {% if color_option %}
+      {% for value in color_option.values %}
+        {% assign color_name_downcase = value | downcase | strip %}
+        {% assign swatch_color = '#cccccc' %}
+        
+        {% case color_name_downcase %}
+          {% when 'red' %}
+            {% assign swatch_color = '#ff0000' %}
+          {% when 'blue' %}
+            {% assign swatch_color = '#0000ff' %}
+          {% when 'green' %}
+            {% assign swatch_color = '#008000' %}
+          {% when 'yellow' %}
+            {% assign swatch_color = '#ffff00' %}
+          {% when 'orange' %}
+            {% assign swatch_color = '#ffa500' %}
+          {% when 'purple' %}
+            {% assign swatch_color = '#800080' %}
+          {% when 'pink' %}
+            {% assign swatch_color = '#ffc0cb' %}
+          {% when 'black' %}
+            {% assign swatch_color = '#000000' %}
+          {% when 'white' %}
+            {% assign swatch_color = '#ffffff' %}
+          {% when 'gray' or 'grey' %}
+            {% assign swatch_color = '#808080' %}
+          {% when 'brown' %}
+            {% assign swatch_color = '#a52a2a' %}
+          {% when 'navy' %}
+            {% assign swatch_color = '#000080' %}
+          {% when 'beige' %}
+            {% assign swatch_color = '#f5f5dc' %}
+          {% when 'cream' %}
+            {% assign swatch_color = '#fffdd0' %}
+          {% when 'gold' %}
+            {% assign swatch_color = '#ffd700' %}
+          {% when 'silver' %}
+            {% assign swatch_color = '#c0c0c0' %}
+          {% when 'maroon' %}
+            {% assign swatch_color = '#800000' %}
+          {% when 'teal' %}
+            {% assign swatch_color = '#008080' %}
+          {% when 'lime' %}
+            {% assign swatch_color = '#00ff00' %}
+          {% when 'olive' %}
+            {% assign swatch_color = '#808000' %}
+          {% when 'aqua' %}
+            {% assign swatch_color = '#00ffff' %}
+          {% when 'fuchsia' %}
+            {% assign swatch_color = '#ff00ff' %}
+          {% when 'coral' %}
+            {% assign swatch_color = '#ff7f50' %}
+          {% when 'salmon' %}
+            {% assign swatch_color = '#fa8072' %}
+          {% when 'khaki' %}
+            {% assign swatch_color = '#f0e68c' %}
+          {% when 'violet' %}
+            {% assign swatch_color = '#ee82ee' %}
+          {% when 'indigo' %}
+            {% assign swatch_color = '#4b0082' %}
+          {% when 'turquoise' %}
+            {% assign swatch_color = '#40e0d0' %}
+          {% when 'magenta' %}
+            {% assign swatch_color = '#ff00ff' %}
+          {% when 'cyan' %}
+            {% assign swatch_color = '#00ffff' %}
+          {% when 'mint' %}
+            {% assign swatch_color = '#98fb98' %}
+          {% when 'lavender' %}
+            {% assign swatch_color = '#e6e6fa' %}
+          {% when 'rose' %}
+            {% assign swatch_color = '#ff66cc' %}
+          {% when 'burgundy' %}
+            {% assign swatch_color = '#800020' %}
+          {% when 'charcoal' %}
+            {% assign swatch_color = '#36454f' %}
+        {% endcase %}
+
+        {% assign variant_available = false %}
+        {% for variant in product.variants %}
+          {% if variant.option1 == value or variant.option2 == value or variant.option3 == value %}
+            {% assign variant_available = true %}
+            {% break %}
+          {% endif %}
+        {% endfor %}
+
+        {% if variant_available %}
+          <div class="ai-color-swatch-item-{{ ai_gen_id }}">
+            <button
+              class="ai-color-swatch-button-{{ ai_gen_id }}"
+              data-color-value="{{ value | escape }}"
+              data-option-position="{{ color_option.position }}"
+              aria-label="Select {{ value }}"
+            >
+              <span
+                class="ai-color-swatch-color-{{ ai_gen_id }}"
+                style="background-color: {{ swatch_color }};"
+              ></span>
+            </button>
+            <div class="ai-color-swatch-tooltip-{{ ai_gen_id }}">{{ value }}</div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  </div>
+</color-swatch-selector-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class ColorSwatchSelector{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.swatchButtons = [];
+        this.selectedColorSpan = null;
+        this.productId = null;
+      }
+
+      connectedCallback() {
+        this.swatchButtons = this.querySelectorAll('.ai-color-swatch-button-{{ ai_gen_id }}');
+        this.selectedColorSpan = this.querySelector('[data-selected-color]');
+        this.productId = this.dataset.productId;
+        
+        this.setupEventListeners();
+        this.setInitialSelection();
+      }
+
+      setupEventListeners() {
+        this.swatchButtons.forEach(button => {
+          button.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.handleColorSelection(button);
+          });
+        });
+      }
+
+      setInitialSelection() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const variantId = urlParams.get('variant');
+        
+        if (variantId) {
+          this.selectVariantColor(variantId);
+        } else if (this.swatchButtons.length > 0) {
+          this.selectColor(this.swatchButtons[0]);
+        }
+      }
+
+      selectVariantColor(variantId) {
+        const productData = window.productData || {};
+        const variants = productData.variants || [];
+        const variant = variants.find(v => v.id.toString() === variantId);
+        
+        if (variant) {
+          const colorValue = variant.option1 || variant.option2 || variant.option3;
+          const matchingButton = Array.from(this.swatchButtons).find(
+            button => button.dataset.colorValue === colorValue
+          );
+          
+          if (matchingButton) {
+            this.selectColor(matchingButton);
+          }
+        }
+      }
+
+      handleColorSelection(selectedButton) {
+        this.selectColor(selectedButton);
+        this.updateProductVariant(selectedButton.dataset.colorValue, selectedButton.dataset.optionPosition);
+      }
+
+      selectColor(selectedButton) {
+        this.swatchButtons.forEach(button => {
+          button.classList.remove('selected');
+        });
+        selectedButton.classList.add('selected');
+        if (this.selectedColorSpan) {
+          this.selectedColorSpan.textContent = ': ' + selectedButton.dataset.colorValue;
+        }
+      }
+
+      updateProductVariant(colorValue, optionPosition) {
+        const variantSelectors = document.querySelectorAll('variant-selects, variant-radios');
+        
+        variantSelectors.forEach(selector => {
+          const optionInput = selector.querySelector(`input[value="${colorValue}"], option[value="${colorValue}"]`);
+          if (optionInput) {
+            if (optionInput.type === 'radio') {
+              optionInput.checked = true;
+            } else if (optionInput.tagName === 'OPTION') {
+              optionInput.selected = true;
+            }
+            
+            const changeEvent = new Event('change', { bubbles: true });
+            optionInput.dispatchEvent(changeEvent);
+          }
+        });
+
+        const productForm = document.querySelector(`form[action*="/cart/add"][data-product-id="${this.productId}"]`);
+        if (productForm) {
+          const formData = new FormData(productForm);
+          const selectedOptions = {};
+          
+          for (let i = 1; i <= 3; i++) {
+            const optionValue = formData.get(`option${i}`);
+            if (optionValue) {
+              selectedOptions[`option${i}`] = optionValue;
+            }
+          }
+          
+          selectedOptions[`option${optionPosition}`] = colorValue;
+          
+          if (window.productData && window.productData.variants) {
+            const matchingVariant = window.productData.variants.find(variant => {
+              return Object.keys(selectedOptions).every(key => {
+                const optionNum = key.replace('option', '');
+                return variant[`option${optionNum}`] === selectedOptions[key];
+              });
+            });
+            
+            if (matchingVariant) {
+              const url = new URL(window.location);
+              url.searchParams.set('variant', matchingVariant.id);
+              window.history.replaceState({}, '', url);
+            }
+          }
+        }
+      }
+    }
+
+    customElements.define('color-swatch-selector-{{ ai_gen_id }}', ColorSwatchSelector{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Color Swatch Selector",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "label_text",
+      "label": "Label text",
+      "default": "Color"
+    },
+    {
+      "type": "header",
+      "content": "Swatch Style"
+    },
+    {
+      "type": "range",
+      "id": "swatch_size",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Swatch size",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "swatch_spacing",
+      "min": 4,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Spacing between swatches",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#e0e0e0"
+    },
+    {
+      "type": "range",
+      "id": "selected_border_width",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "unit": "px",
+      "label": "Selected border width",
+      "default": 2
+    },
+    {
+      "type": "color",
+      "id": "selected_border_color",
+      "label": "Selected border color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Label Style"
+    },
+    {
+      "type": "range",
+      "id": "label_font_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Label font size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Label color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "selected_color",
+      "label": "Selected color text",
+      "default": "#666666"
+    },
+    {
+      "type": "header",
+      "content": "Tooltip Style"
+    },
+    {
+      "type": "color",
+      "id": "tooltip_bg_color",
+      "label": "Tooltip background",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "tooltip_text_color",
+      "label": "Tooltip text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Spacing"
+    },
+    {
+      "type": "range",
+      "id": "margin_top",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Top margin",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "margin_bottom",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Bottom margin",
+      "default": 16
+    }
+  ],
+  "presets": [
+    {
+      "name": "Color Swatch Selector"
+    }
+  ]
+}
+{% endschema %}

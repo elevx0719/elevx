@@ -1,0 +1,479 @@
+{% doc %}
+  @prompt
+    create a size selection tab, it should be only visible on pc and tab and not shoul be visible on the mobile view
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-size-selector-{{ ai_gen_id }} {
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .ai-size-selector__label-{{ ai_gen_id }} {
+    display: block;
+    font-size: {{ block.settings.label_size }}px;
+    font-weight: 600;
+    color: {{ block.settings.label_color }};
+    margin-bottom: 12px;
+  }
+
+  .ai-size-selector__tabs-{{ ai_gen_id }} {
+    display: flex;
+    flex-wrap: wrap;
+    gap: {{ block.settings.tab_spacing }}px;
+    margin-bottom: 16px;
+  }
+
+  .ai-size-selector__tab-{{ ai_gen_id }} {
+    flex: 1;
+    min-width: 60px;
+    padding: {{ block.settings.tab_padding }}px;
+    background-color: {{ block.settings.tab_background }};
+    color: {{ block.settings.tab_text_color }};
+    border: {{ block.settings.tab_border_width }}px solid {{ block.settings.tab_border_color }};
+    border-radius: {{ block.settings.tab_border_radius }}px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: {{ block.settings.tab_font_size }}px;
+    font-weight: 500;
+    user-select: none;}
+
+  .ai-size-selector__tab-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.tab_hover_background }};
+    color: {{ block.settings.tab_hover_text_color }};border-color: {{ block.settings.tab_hover_border_color }};
+  }
+
+  .ai-size-selector__tab-{{ ai_gen_id }}.active {
+    background-color: {{ block.settings.tab_active_background }};
+    color: {{ block.settings.tab_active_text_color }};
+    border-color: {{ block.settings.tab_active_border_color }};
+  }
+
+  .ai-size-selector__tab-{{ ai_gen_id }}.disabled {
+    background-color: {{ block.settings.tab_disabled_background }};
+    color: {{ block.settings.tab_disabled_text_color }};
+    border-color: {{ block.settings.tab_disabled_border_color }};cursor: not-allowed;opacity: 0.6;
+  }
+
+  .ai-size-selector__tab-{{ ai_gen_id }}.disabled:hover {
+    background-color: {{ block.settings.tab_disabled_background }};
+    color: {{ block.settings.tab_disabled_text_color }};
+    border-color: {{ block.settings.tab_disabled_border_color }};
+  }
+
+  .ai-size-selector__info-{{ ai_gen_id }} {
+    padding: 16px;
+    background-color: {{ block.settings.info_background }};
+    border-radius: {{ block.settings.info_border_radius }}px;
+    border: 1px solid {{ block.settings.info_border_color }};}
+
+  .ai-size-selector__selected-size-{{ ai_gen_id }} {
+    font-size: {{ block.settings.info_font_size }}px;
+    color: {{ block.settings.info_text_color }};
+    margin-bottom: 8px;
+  }
+
+  .ai-size-selector__size-guide-{{ ai_gen_id }} {
+    font-size: {{ block.settings.guide_font_size }}px;
+    color: {{ block.settings.guide_text_color }};
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;}
+
+  .ai-size-selector__size-guide-{{ ai_gen_id }}:hover {
+    color: {{ block.settings.guide_hover_color }};
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-size-selector-{{ ai_gen_id }} {
+      display: none;
+    }
+  }
+{% endstyle %}
+
+<size-selector-{{ ai_gen_id }}
+  class="ai-size-selector-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  {% if block.settings.label != blank %}
+    <label class="ai-size-selector__label-{{ ai_gen_id }}">
+      {{ block.settings.label }}
+    </label>
+  {% endif %}
+
+  <div class="ai-size-selector__tabs-{{ ai_gen_id }}">
+    {% assign sizes = block.settings.available_sizes | split: ',' %}
+    {% assign disabled_sizes = block.settings.disabled_sizes | split: ',' %}
+    {% for size in sizes %}
+      {% assign trimmed_size = size | strip %}
+      {% assign is_disabled = false %}
+      
+      {% for disabled_size in disabled_sizes %}
+        {% assign trimmed_disabled = disabled_size | strip %}
+        {% if trimmed_size == trimmed_disabled %}
+          {% assign is_disabled = true %}{% break %}
+        {% endif %}
+      {% endfor %}<button
+        type="button"
+        class="ai-size-selector__tab-{{ ai_gen_id }}{% if forloop.first %} active{% endif %}{% if is_disabled %} disabled{% endif %}"
+        data-size="{{ trimmed_size }}"
+        {% if is_disabled %}disabled{% endif %}
+      >
+        {{ trimmed_size }}
+      </button>
+    {% endfor %}
+  </div>
+
+  {% if block.settings.show_info %}
+    <div class="ai-size-selector__info-{{ ai_gen_id }}">
+      <div class="ai-size-selector__selected-size-{{ ai_gen_id }}">
+        Selected size: <span class="selected-size-display">{{ sizes.first | strip }}</span>
+      </div>
+      {% if block.settings.size_guide_text != blank %}
+        <button
+          type="button"
+          class="ai-size-selector__size-guide-{{ ai_gen_id }}"
+          onclick="window.open('{{ block.settings.size_guide_url }}', '_blank')"
+        >
+          {{ block.settings.size_guide_text }}
+        </button>
+      {% endif %}
+    </div>
+  {% endif %}
+</size-selector-{{ ai_gen_id }}><script>
+  (function() {
+    class SizeSelector{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.tabs = this.querySelectorAll('.ai-size-selector__tab-{{ ai_gen_id }}');
+        this.selectedSizeDisplay = this.querySelector('.selected-size-display');
+        this.setupEventListeners();this.setInitialSelection();
+      }
+
+      setupEventListeners() {
+        this.tabs.forEach(tab => {
+          tab.addEventListener('click', (e) => {
+            if (!tab.disabled) {
+              this.selectSize(tab);
+            }
+          });
+        });
+      }
+
+      setInitialSelection() {
+        const firstAvailableTab = Array.from(this.tabs).find(tab => !tab.disabled);
+        if (firstAvailableTab) {
+          this.selectSize(firstAvailableTab);
+        }
+      }
+
+      selectSize(selectedTab) {
+        this.tabs.forEach(tab => {
+          tab.classList.remove('active');
+        });
+        
+        selectedTab.classList.add('active');
+        if (this.selectedSizeDisplay) {
+          this.selectedSizeDisplay.textContent = selectedTab.dataset.size;
+        }
+
+        this.dispatchEvent(new CustomEvent('sizeChanged', {
+          detail: {
+            selectedSize: selectedTab.dataset.size
+          },
+          bubbles: true
+        }));
+      }
+    }
+
+    customElements.define('size-selector-{{ ai_gen_id }}', SizeSelector{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Size Selection Tabs",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Label",
+      "default": "Size"
+    },
+    {
+      "type": "textarea",
+      "id": "available_sizes",
+      "label": "Available sizes",
+      "default": "XS, S, M, L, XL, XXL",
+      "info": "Separate sizes with commas"
+    },
+    {
+      "type": "textarea",
+      "id": "disabled_sizes",
+      "label": "Disabled sizes",
+      "default": "XS, XXL",
+      "info": "Separate sizes with commas. These will appear grayed out."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_info",
+      "label": "Show size info",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "size_guide_text",
+      "label": "Size guide text",
+      "default": "Size guide"
+    },
+    {
+      "type": "url",
+      "id": "size_guide_url",
+      "label": "Size guide URL"
+    },
+    {
+      "type": "header",
+      "content": "Label Style"
+    },
+    {
+      "type": "range",
+      "id": "label_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Label font size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "label_color",
+      "label": "Label color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Tab Style"
+    },
+    {
+      "type": "range",
+      "id": "tab_font_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Tab font size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "tab_padding",
+      "min": 8,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Tab padding",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "tab_spacing",
+      "min": 4,
+      "max": 16,
+      "step": 2,
+      "unit": "px",
+      "label": "Tab spacing",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "tab_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Tab border radius",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "tab_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Tab border width",
+      "default": 1
+    },
+    {
+      "type": "header",
+      "content": "Tab Colors - Default"
+    },
+    {
+      "type": "color",
+      "id": "tab_background",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "tab_text_color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "tab_border_color",
+      "label": "Border color",
+      "default": "#e6e6e6"
+    },
+    {
+      "type": "header",
+      "content": "Tab Colors - Hover"
+    },
+    {
+      "type": "color",
+      "id": "tab_hover_background",
+      "label": "Hover background",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "color",
+      "id": "tab_hover_text_color",
+      "label": "Hover text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "tab_hover_border_color",
+      "label": "Hover border color",
+      "default": "#cccccc"
+    },
+    {
+      "type": "header",
+      "content": "Tab Colors - Active"
+    },
+    {
+      "type": "color",
+      "id": "tab_active_background",
+      "label": "Active background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "tab_active_text_color",
+      "label": "Active text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "tab_active_border_color",
+      "label": "Active border color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Tab Colors - Disabled"
+    },
+    {
+      "type": "color",
+      "id": "tab_disabled_background",
+      "label": "Disabled background",
+      "default": "#f9f9f9"
+    },
+    {
+      "type": "color",
+      "id": "tab_disabled_text_color",
+      "label": "Disabled text color",
+      "default": "#cccccc"
+    },
+    {
+      "type": "color",
+      "id": "tab_disabled_border_color",
+      "label": "Disabled border color",
+      "default": "#e6e6e6"
+    },
+    {
+      "type": "header",
+      "content": "Info Section"
+    },
+    {
+      "type": "color",
+      "id": "info_background",
+      "label": "Info background",
+      "default": "#f8f8f8"
+    },
+    {
+      "type": "color",
+      "id": "info_border_color",
+      "label": "Info border color",
+      "default": "#e6e6e6"
+    },
+    {
+      "type": "range",
+      "id": "info_border_radius",
+      "min": 0,
+      "max": 16,
+      "step": 2,
+      "unit": "px",
+      "label": "Info border radius",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "info_font_size",
+      "min": 12,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Info font size",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "info_text_color",
+      "label": "Info text color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "guide_font_size",
+      "min": 10,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "label": "Size guide font size",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "guide_text_color",
+      "label": "Size guide color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "guide_hover_color",
+      "label": "Size guide hover color",
+      "default": "#000000"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Size Selection Tabs"
+    }
+  ]
+}
+{% endschema %}

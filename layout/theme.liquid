@@ -1,0 +1,205 @@
+<!doctype html>
+<html
+  class="no-js{% if request.design_mode %} shopify-design-mode{% endif %}"
+  lang="{{ request.locale.iso_code }}"
+>
+  <head>
+ {%- render 'ecom_header' -%}
+    {%- render 'stylesheets' -%}
+    {%- if settings.favicon != blank -%}
+      <link
+        rel="icon"
+        type="image/png"
+        href="{{ settings.favicon | image_url: width: 32, height: 32 }}"
+      >
+    {%- endif -%}
+
+    {% comment %} This a way to wait for main content to load when navigating to a new page so that the view transitions can work consistently {% endcomment %}
+    <link
+      rel="expect"
+      href="#MainContent"
+      blocking="render"
+      id="view-transition-render-blocker"
+    >
+
+    {%- render 'meta-tags' -%}
+    {%- render 'fonts' -%}
+    {%- render 'scripts' -%}
+    {%- render 'theme-styles-variables' -%}
+    {%- render 'color-schemes' -%}
+
+    {% if request.design_mode %}
+      {%- render 'theme-editor' -%}
+    {% endif %}
+
+    {{ content_for_header }}
+    <!-- Splide Core CSS -->
+    {{ 'splide.min.css' | asset_url | stylesheet_tag }}
+    <!-- Fancybox CSS -->
+    {{ 'fancybox.css'       | asset_url | stylesheet_tag }}
+  </head>
+
+  <body class="page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}">
+    {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+    <div id="header-group">
+      {% sections 'header-group' %}
+    </div>
+
+    <main
+      id="MainContent"
+      class="content-for-layout"
+      role="main"
+      data-page-transition-enabled="{{ settings.page_transition_enabled }}"
+      data-product-transition="{{ settings.transition_to_main_product }}"
+      data-template="{{ template }}"
+    >
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    {% # theme-check-disable ParserBlockingScript %}
+    <script src="{{ 'critical.js' | asset_url }}"></script>
+    {% # theme-check-enable ParserBlockingScript %}
+
+    {% render 'search-modal' %}
+
+    {% if settings.quick_add or settings.mobile_quick_add %}
+      {% render 'quick-add-modal' %}
+    {% endif %}
+      <!-- Splide Core JS -->
+      {{ 'splide.min.js' | asset_url | script_tag }}
+      
+      <!-- Fancybox UMD JS -->
+      {{ 'fancybox.umd.js'    | asset_url | script_tag }}
+      
+      <!-- Splide Auto Scroll extension -->
+      {{ 'splide-extension-auto-scroll.min.js' | asset_url | script_tag }}
+      
+      <!-- Splide initializer -->
+      {{ 'splide-init.js' | asset_url | script_tag }}
+
+      <!-- This is js co stickey add to cart bar -->
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+  {% if product.variants.size > 1 %}
+    window.productJson = [
+      {% for variant in product.variants %}
+        {
+          id: {{variant.id}},
+          title: "{{variant.title | escape}}",
+          available: {{ variant.available | json }},
+          option1: "{{variant.option1 | escape}}"
+        }{% unless forloop.last %},{% endunless %}
+      {% endfor %}
+    ];
+  {% endif %}
+
+  var buyNowBtn = document.getElementById('custom-sticky-buy-now');
+  var addToCartBtn = document.getElementById('custom-sticky-add-to-cart');
+  var sheetBg = document.getElementById('sticky-size-sheet');
+  var sheetClose = document.getElementById('sticky-size-close');
+  var sizeOptionsDiv = document.getElementById('sticky-size-options');
+  var currentAction = null;
+  var selectedSize = null;
+  var selectedVariant = null;
+
+  function buildSizeOptions() {
+    sizeOptionsDiv.innerHTML = '';
+    selectedSize = null;
+    selectedVariant = null;
+    var variants = window.productJson || [];
+    var uniqueSizes = [];
+    variants.forEach(v => {
+      if (!uniqueSizes.some(obj => obj.size === v.option1)) {
+        uniqueSizes.push({ size: v.option1, id: v.id, available: v.available });
+      }
+    });
+
+    uniqueSizes.forEach(obj => {
+      var btn = document.createElement('button');
+      btn.className = 'sticky-size-option-btn';
+      btn.textContent = obj.size;
+      btn.dataset.size = obj.size;
+
+      if (!obj.available) {
+        btn.disabled = true;
+        let notify = document.createElement('span');
+        notify.textContent = 'NOTIFY ME';
+        notify.className = 'notify-me-label';
+        btn.appendChild(document.createElement('br'));
+        btn.appendChild(notify);
+      }
+
+      btn.onclick = function() {
+        if (btn.disabled) return;
+        sizeOptionsDiv.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedSize = obj.size;
+        selectedVariant = variants.find(v => v.option1 === selectedSize);
+        if (selectedVariant && selectedVariant.available) {
+          proceedAfterSizeSelect();
+        }
+      };
+      sizeOptionsDiv.appendChild(btn);
+    });
+  }
+
+  function showSizeSheet(action) {
+    currentAction = action;
+    buildSizeOptions();
+    sheetBg.classList.add('active');
+  }
+
+  function hideSizeSheet() {
+    sheetBg.classList.remove('active');
+  }
+  sheetClose.onclick = hideSizeSheet;
+  sheetBg.onclick = function(e) { if(e.target === sheetBg) hideSizeSheet(); };
+
+  buyNowBtn.onclick = function(e) {
+    e.preventDefault();
+    showSizeSheet('buy');
+  };
+  addToCartBtn.onclick = function(e) {
+    e.preventDefault();
+    showSizeSheet('cart');
+  };
+
+  function proceedAfterSizeSelect() {
+    setTimeout(function() {
+      hideSizeSheet();
+      if (!selectedVariant) return;
+      if (currentAction === 'cart') {
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quantity: 1, id: selectedVariant.id })
+        }).then(function() {
+          window.location.href = '/cart';
+        });
+      } else if (currentAction === 'buy') {
+        fetch('/cart/clear.js', { method: 'POST' }).then(function() {
+          fetch('/cart/add.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantity: 1, id: selectedVariant.id })
+          }).then(function() {
+            window.location.href = '/checkout';
+          });
+        });
+      }
+    }, 150);
+  }
+
+  document.getElementById('size-chart-link').onclick = function(e) {
+    e.preventDefault();
+    window.open('/pages/size-chart','_blank');
+  };
+});
+</script>
+  
+
+    {%- render "ecom_footer"-%}</body>
+</html>

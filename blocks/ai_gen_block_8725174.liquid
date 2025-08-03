@@ -1,0 +1,423 @@
+{% doc %}
+  @prompt
+    A full width section with 3 images - which can be an image or gif and over it will be 3 texts respectively. Which can be added by us
+    Now converted to a carousel that shows 3 slides on desktop and 1 slide on mobile with auto-slide functionality and touch/swipe support
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-feature-section-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    padding: {{ block.settings.section_padding }}px 0;
+    overflow: hidden;
+    background-color: {{ block.settings.background_color }};
+  }
+  
+  .ai-feature-container-{{ ai_gen_id }} {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+  
+  .ai-feature-carousel-{{ ai_gen_id }} {
+    position: relative;
+    overflow: hidden;
+    touch-action: pan-y; /* Allow vertical scrolling but handle horizontal touch */
+  }
+  
+  .ai-feature-carousel-track-{{ ai_gen_id }} {
+    display: flex;
+    transition: transform 0.3s ease-out;
+    cursor: grab;
+  }
+  
+  .ai-feature-carousel-track-{{ ai_gen_id }}.dragging {
+    transition: none;
+    cursor: grabbing;
+  }
+  
+  .ai-feature-item-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 0 0 calc(33.333% - {{ block.settings.grid_gap | divided_by: 3 | times: 2 }}px);
+    margin-right: {{ block.settings.grid_gap }}px;
+    user-select: none; /* Prevent text selection during drag */
+  }
+  
+  .ai-feature-item-{{ ai_gen_id }}:last-child {
+    margin-right: 0;
+  }
+  
+  .ai-feature-image-wrapper-{{ ai_gen_id }} {
+    width: 100%;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    border-radius: {{ block.settings.image_border_radius }}px;
+  }
+  
+  .ai-feature-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: auto;
+    display: block;
+    pointer-events: none; /* Prevent image drag */
+  }
+  
+  .ai-feature-text-{{ ai_gen_id }} {
+    color: {{ block.settings.text_color }};
+    font-size: {{ block.settings.text_size }}px;
+    line-height: 1.4;
+  }
+  
+
+  
+  @media screen and (max-width: 767px) {
+    .ai-feature-item-{{ ai_gen_id }} {
+      flex: 0 0 calc(66.667% - {{ block.settings.grid_gap | divided_by: 2 }}px);
+      margin-right: {{ block.settings.grid_gap }}px;
+    }
+    
+    .ai-feature-item-{{ ai_gen_id }}:last-child {
+      margin-right: 0;
+    }
+    
+    .ai-feature-image-wrapper-{{ ai_gen_id }} {
+      max-width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+{% endstyle %}
+
+<div class="ai-feature-section-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-feature-container-{{ ai_gen_id }}">
+    <div class="ai-feature-carousel-{{ ai_gen_id }}">
+      <div class="ai-feature-carousel-track-{{ ai_gen_id }}" id="carousel-track-{{ ai_gen_id }}">
+        {% for i in (1..3) %}
+          {% assign image_setting = 'image_' | append: i %}
+          {% assign text_setting = 'text_' | append: i %}
+          
+          <div class="ai-feature-item-{{ ai_gen_id }}">
+            <div class="ai-feature-image-wrapper-{{ ai_gen_id }}">
+              {% if block.settings[image_setting] %}
+                <img 
+                  class="ai-feature-image-{{ ai_gen_id }}"
+                  src="{{ block.settings[image_setting] | image_url: width: 600 }}" 
+                  alt="{{ block.settings[image_setting].alt | escape }}"
+                  loading="lazy"
+                  width="{{ block.settings[image_setting].width }}"
+                  height="{{ block.settings[image_setting].height }}"
+                >
+              {% else %}
+                <div class="ai-feature-image-placeholder-{{ ai_gen_id }}">
+                  {{ 'image' | placeholder_svg_tag }}
+                </div>
+              {% endif %}
+            </div>
+            
+            {% if block.settings[text_setting] != blank %}
+              <div class="ai-feature-text-{{ ai_gen_id }}">
+                {{ block.settings[text_setting] }}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const carouselId = '{{ ai_gen_id }}';
+  const track = document.getElementById(`carousel-track-${carouselId}`);
+  const items = document.querySelectorAll(`.ai-feature-item-${carouselId}`);
+  const carousel = document.querySelector(`.ai-feature-carousel-${carouselId}`);
+  
+  let currentSlide = 0;
+  const totalSlides = items.length;
+  const autoSlideInterval = {{ block.settings.auto_slide_interval | default: 5000 }};
+  let autoSlideTimer;
+  
+  // Touch/swipe variables
+  let startX = 0;
+  let currentX = 0;
+  let isDragging = false;
+  let startTransform = 0;
+  
+  function updateCarousel(animate = true) {
+    const isMobile = window.innerWidth <= 767;
+    
+    if (animate) {
+      track.style.transition = 'transform 0.3s ease-out';
+    } else {
+      track.style.transition = 'none';
+    }
+    
+    if (isMobile) {
+      // Mobile: show 1.5 slides at a time
+      const slideWidth = 66.667; // Each slide takes 66.667% width (1/1.5 = 0.667)
+      const translateX = -currentSlide * slideWidth;
+      track.style.transform = `translateX(${translateX}%)`;
+    } else {
+      // Desktop: show all 3 slides (no sliding needed)
+      track.style.transform = 'translateX(0%)';
+    }
+  }
+  
+  function nextSlide() {
+    const isMobile = window.innerWidth <= 767;
+    
+    if (isMobile) {
+      currentSlide = (currentSlide + 1) % totalSlides;
+      updateCarousel();
+    }
+  }
+  
+  function goToSlide(slideIndex) {
+    const isMobile = window.innerWidth <= 767;
+    
+    if (isMobile) {
+      currentSlide = slideIndex;
+      updateCarousel();
+    }
+  }
+  
+  function startAutoSlide() {
+    const isMobile = window.innerWidth <= 767;
+    if (isMobile) {
+      autoSlideTimer = setInterval(nextSlide, autoSlideInterval);
+    }
+  }
+  
+  function stopAutoSlide() {
+    clearInterval(autoSlideTimer);
+  }
+  
+  // Touch/Mouse event handlers
+  function getClientX(e) {
+    return e.touches ? e.touches[0].clientX : e.clientX;
+  }
+  
+  function handleStart(e) {
+    const isMobile = window.innerWidth <= 767;
+    if (!isMobile) return;
+    
+    isDragging = true;
+    startX = getClientX(e);
+    currentX = startX;
+    
+    // Get current transform value
+    const currentTransform = track.style.transform;
+    const match = currentTransform.match(/translateX\(([^)]+)\)/);
+    startTransform = match ? parseFloat(match[1]) : 0;
+    
+    track.classList.add('dragging');
+    stopAutoSlide();
+    
+    // Prevent default to avoid text selection
+    e.preventDefault();
+  }
+  
+  function handleMove(e) {
+    if (!isDragging) return;
+    
+    const isMobile = window.innerWidth <= 767;
+    if (!isMobile) return;
+    
+    currentX = getClientX(e);
+    const deltaX = currentX - startX;
+    const deltaPercentage = (deltaX / carousel.offsetWidth) * 100;
+    
+    // Apply the drag movement
+    track.style.transition = 'none';
+    track.style.transform = `translateX(${startTransform + deltaPercentage}%)`;
+    
+    e.preventDefault();
+  }
+  
+  function handleEnd(e) {
+    if (!isDragging) return;
+    
+    const isMobile = window.innerWidth <= 767;
+    if (!isMobile) return;
+    
+    isDragging = false;
+    track.classList.remove('dragging');
+    
+    const deltaX = currentX - startX;
+    const threshold = carousel.offsetWidth * 0.2; // 20% threshold
+    
+    if (Math.abs(deltaX) > threshold) {
+      if (deltaX > 0) {
+        // Swipe right - go to previous slide
+        currentSlide = Math.max(0, currentSlide - 1);
+      } else {
+        // Swipe left - go to next slide
+        currentSlide = Math.min(totalSlides - 1, currentSlide + 1);
+      }
+    }
+    
+    updateCarousel();
+    startAutoSlide();
+  }
+  
+  // Mouse events
+  track.addEventListener('mousedown', handleStart);
+  document.addEventListener('mousemove', handleMove);
+  document.addEventListener('mouseup', handleEnd);
+  
+  // Touch events
+  track.addEventListener('touchstart', handleStart, { passive: false });
+  track.addEventListener('touchmove', handleMove, { passive: false });
+  track.addEventListener('touchend', handleEnd);
+  
+  // Handle window resize
+  window.addEventListener('resize', () => {
+    updateCarousel(false);
+    stopAutoSlide();
+    startAutoSlide();
+  });
+  
+  // Pause auto-slide on hover
+  carousel.addEventListener('mouseenter', stopAutoSlide);
+  carousel.addEventListener('mouseleave', startAutoSlide);
+  
+  // Initialize
+  updateCarousel(false);
+  startAutoSlide();
+});
+</script>
+
+{% schema %}
+{
+  "name": "Feature Carousel",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Section Settings"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 20,
+      "max": 100,
+      "step": 10,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 60
+    },
+    {
+      "type": "header",
+      "content": "Carousel Settings"
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Gap between items",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "auto_slide_interval",
+      "min": 2000,
+      "max": 5000,
+      "step": 500,
+      "unit": "ms",
+      "label": "Auto-slide interval",
+      "default": 5000
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Image border radius",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "min": 12,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "label": "Text size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#333333"
+    },
+    {
+      "type": "header",
+      "content": "Feature 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_1",
+      "label": "Image or GIF"
+    },
+    {
+      "type": "richtext",
+      "id": "text_1",
+      "label": "Text",
+      "default": "<p>Feature description text goes here. Describe your product or service.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Feature 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_2",
+      "label": "Image or GIF"
+    },
+    {
+      "type": "richtext",
+      "id": "text_2",
+      "label": "Text",
+      "default": "<p>Feature description text goes here. Describe your product or service.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Feature 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_3",
+      "label": "Image or GIF"
+    },
+    {
+      "type": "richtext",
+      "id": "text_3",
+      "label": "Text",
+      "default": "<p>Feature description text goes here. Describe your product or service.</p>"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Feature Carousel"
+    }
+  ]
+}
+{% endschema %}

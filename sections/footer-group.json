@@ -1,0 +1,107 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "Footer",
+  "sections": {
+    "custom_liquid_9mbrbG": {
+      "type": "custom-liquid",
+      "custom_css": [
+        "{background-image: url(\"https://cdn.shopify.com/s/files/1/0758/9242/4963/files/2.png?v=1748547135\") !important; background-position: center center !important; background-size: cover !important; background-repeat: no-repeat !important;}"
+      ],
+      "name": "t:names.custom_liquid",
+      "settings": {
+        "custom_liquid": "<style>\n.footer-signup-container {\n    max-width: 1200px;\n    width: 100%;\n    padding: 40px 20px;\n    background-color: transparent;\n    color: white;\n    font-family: 'Arial', sans-serif;\n}\n\n.signup-hero-section {\n    text-align: center;\n    margin-bottom: 40px;\n}\n\n.signup-main-heading {\n    font-size: 28px;\n    font-weight: 300;\n    margin-bottom: 20px;\n    line-height: 1.2;\n}\n\n.signup-description-text {\n    font-size: 14px;\n    line-height: 1.5;\n    margin-bottom: 25px;\n    color: #cccccc;\n}\n\n.membership-cta-button {\n    background: transparent;\n    border: 1px solid white;\n    color: white;\n    padding: 12px 24px;\n    font-size: 12px;\n    letter-spacing: 1px;\n    text-transform: uppercase;\n    cursor: pointer;\n    transition: all 0.3s ease;\n    text-decoration: none;\n    display: inline-block;\n}\n\n.membership-cta-button:hover {\n    background-color: white;\n    color: #1a2b3d;\n}\n\n/* Desktop Grid Layout */\n.menu-sections-grid {\n    display: grid;\n    grid-template-columns: repeat(3, 1fr);\n    gap: 40px;\n    margin-bottom: 50px;\n}\n\n.menu-column-section {\n    display: block;\n}\n\n.column-section-heading {\n    color: #888;\n    font-size: 12px;\n    letter-spacing: 1px;\n    text-transform: uppercase;\n    margin-bottom: 20px;\n    border: none;\n    background: none;\n    padding: 0;\n    cursor: default;\n    width: 100%;\n    text-align: left;\n}\n\n.navigation-links-wrapper {\n    display: block;\n}\n\n.navigation-menu-link {\n    display: block;\n    color: white;\n    text-decoration: none;\n    font-size: 14px;\n    margin-bottom: 12px;\n    transition: color 0.3s ease;\n}\n\n.navigation-menu-link:hover {\n    color: #ccc;\n}\n\n.featured-promotion-link {\n    color: #ff6b6b;\n}\n\n\n\n/* Mobile Accordion Styles */\n@media (max-width: 768px) {\n    .menu-sections-grid {\n        display: grid;\n        grid-template-columns: 1fr 1fr;\n        gap: 20px;\n    }\n    \n    .menu-column-section {\n        margin-bottom: 30px;\n    }\n    \n    .menu-column-section:last-child {\n        grid-column: 1 / -1;\n    }\n    \n    .column-section-heading {\n        cursor: pointer;\n        display: flex;\n        justify-content: space-between;\n        align-items: center;\n        padding: 10px 0;\n    }\n    \n    .column-section-heading:hover {\n        color: #ccc;\n    }\n    \n    .column-section-heading.mobile-menu-active {\n        color: white;\n    }\n    \n    .dropdown-indicator-arrow {\n        font-size: 10px;\n        transition: transform 0.3s ease;\n    }\n    \n    .column-section-heading.mobile-menu-active .dropdown-indicator-arrow {\n        transform: rotate(180deg);\n    }\n    \n    .navigation-links-wrapper {\n        overflow: hidden;\n        max-height: 0;\n        transition: max-height 0.3s ease;\n    }\n    \n    .navigation-links-wrapper.mobile-content-visible {\n        max-height: 300px;\n        padding-top: 15px;\n    }\n}\n</style>\n\n<div class=\"footer-signup-container\">\n    <!-- Sign Up Section -->\n    <div class=\"signup-hero-section\">\n        <h1 class=\"signup-main-heading\">Sign up & Save 10% on your order</h1>\n        <p class=\"signup-description-text\">We'll send you updates on new launches, products and events, only good stuff.</p>\n        <a href=\"#\" class=\"membership-cta-button\">BECOME A MEMBER →</a>\n    </div>\n\n    <!-- Menu Sections Grid -->\n    <div class=\"menu-sections-grid\">\n        <!-- Shop Column -->\n        <div class=\"menu-column-section\">\n            <div class=\"column-section-heading\" onclick=\"toggleMobileMenu(this)\">\n                SHOP\n                <span class=\"dropdown-indicator-arrow\">▼</span>\n            </div>\n            <div class=\"navigation-links-wrapper\">\n                <a href=\"#\" class=\"navigation-menu-link featured-promotion-link\">Peak Summer Sale</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Polos</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Bottom Wear</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Ethnicwear</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Shirts</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Tees</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Winterwear</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Pure Denim</a>\n            </div>\n        </div>\n\n        <!-- Manage Column -->\n        <div class=\"menu-column-section\">\n            <div class=\"column-section-heading\" onclick=\"toggleMobileMenu(this)\">\n                MANAGE\n                <span class=\"dropdown-indicator-arrow\">▼</span>\n            </div>\n            <div class=\"navigation-links-wrapper\">\n                <a href=\"#\" class=\"navigation-menu-link\" onclick=\"handleTrackOrderClick(event)\">Track Order</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Return/Exchange</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Free Shipping & Returns</a>\n            </div>\n        </div>\n\n        <!-- Info Column -->\n        <div class=\"menu-column-section\">\n            <div class=\"column-section-heading\" onclick=\"toggleMobileMenu(this)\">\n                INFO\n                <span class=\"dropdown-indicator-arrow\">▼</span>\n            </div>\n            <div class=\"navigation-links-wrapper\">\n                <a href=\"/pages/about-us\" class=\"navigation-menu-link\">About Us</a>\n                <a href=\"/pages/contact\" class=\"navigation-menu-link\">Contact Us</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Terms & Conditions</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Privacy Policy</a>\n                <a href=\"#\" class=\"navigation-menu-link\">Frequently Asked Questions</a>\n            </div>\n        </div>\n\n    </div>\n\n\n</div>\n\n<script>\nfunction toggleMobileMenu(header) {\n    // Only work on mobile\n    if (window.innerWidth > 768) return;\n    \n    const content = header.nextElementSibling;\n    \n    // Close all other accordions\n    const allContents = document.querySelectorAll('.navigation-links-wrapper');\n    const allHeaders = document.querySelectorAll('.column-section-heading');\n    \n    allContents.forEach(item => {\n        if (item !== content) {\n            item.classList.remove('mobile-content-visible');\n        }\n    });\n    \n    allHeaders.forEach(item => {\n        if (item !== header) {\n            item.classList.remove('mobile-menu-active');\n        }\n    });\n    \n    // Toggle current accordion\n    content.classList.toggle('mobile-content-visible');\n    header.classList.toggle('mobile-menu-active');\n}\n\nfunction handleTrackOrderClick(event) {\n    event.preventDefault();\n    \n    // Find element with class 'account-button__icon'\n    const accountButton = document.querySelector('.account-button__icon');\n    \n    if (accountButton) {\n        // Trigger a click on the account button\n        accountButton.click();\n    } else {\n        console.warn('Element with class \"account-button__icon\" not found');\n    }\n}\n\n// Close accordion when clicking outside on mobile\ndocument.addEventListener('click', function(event) {\n    if (window.innerWidth > 768) return;\n    \n    const isMenuClick = event.target.closest('.menu-column-section');\n    \n    if (!isMenuClick) {\n        const allContents = document.querySelectorAll('.navigation-links-wrapper');\n        const allHeaders = document.querySelectorAll('.column-section-heading');\n        \n        allContents.forEach(item => {\n            item.classList.remove('mobile-content-visible');\n        });\n        \n        allHeaders.forEach(item => {\n            item.classList.remove('mobile-menu-active');\n        });\n    }\n});\n</script>",
+        "color_scheme": "",
+        "section_width": "page-width",
+        "padding-block-start": 0,
+        "padding-block-end": 0
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "group_wdTRWL": {
+          "type": "group",
+          "name": "t:names.group",
+          "settings": {
+            "link": "",
+            "open_in_new_tab": false,
+            "content_direction": "row",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "align_baseline": false,
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 12,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "inherit_color_scheme": true,
+            "color_scheme": "",
+            "background_media": "none",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_radius": 0,
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "group_wdTRWL"
+      ],
+      "disabled": true,
+      "name": "Footer",
+      "settings": {
+        "content_direction": "row",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "space-between",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 20,
+        "section_width": "page-width",
+        "section_height": "",
+        "color_scheme": "scheme-1",
+        "background_media": "none",
+        "video_position": "cover",
+        "background_image_position": "cover",
+        "padding-block-start": 30,
+        "padding-block-end": 48
+      }
+    },
+    "sticky_bottom_nav_cRCPKJ": {
+      "type": "sticky-bottom-nav",
+      "name": "Sticky Bottom Navigation",
+      "settings": {}
+    }
+  },
+  "order": [
+    "custom_liquid_9mbrbG",
+    "footer",
+    "sticky_bottom_nav_cRCPKJ"
+  ]
+}

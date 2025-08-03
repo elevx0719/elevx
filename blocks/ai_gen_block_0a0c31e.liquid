@@ -1,0 +1,478 @@
+{% doc %}
+  @prompt
+    A carousal section which will show 3 slides on desktop and 1.5 slides on mobile 
+    
+    Each slide has a rounded border of 1px and black color with the following text
+    
+    A heading
+    Another heading
+    A descrrioption
+    A icon text
+    
+    I should be able to configure the font and icon size as well as colors
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-carousel-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .ai-carousel-container-{{ ai_gen_id }} {
+    display: flex;
+    scroll-snap-type: x mandatory;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    gap: {{ block.settings.slide_gap }}px;
+    padding: {{ block.settings.slide_padding }}px;
+  }
+
+  .ai-carousel-container-{{ ai_gen_id }}::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ai-carousel-slide-{{ ai_gen_id }} {
+    flex: 0 0 calc((100% - {{ block.settings.slide_gap | times: 2 }}px) / 3);
+    min-width: 0;
+    scroll-snap-align: start;
+    border: 1px solid {{ block.settings.border_color }};
+    border-radius: {{ block.settings.border_radius }}px;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: {{ block.settings.slide_background_color }};
+  }
+
+  @media screen and (max-width: 749px) {
+    .ai-carousel-slide-{{ ai_gen_id }} {
+      flex: 0 0 calc(66.666% - {{ block.settings.slide_gap }}px);
+    }
+  }
+
+  .ai-carousel-heading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.heading_size }}px;
+    color: {{ block.settings.heading_color }};
+    margin: 0;
+    font-weight: 600;
+  }
+
+  .ai-carousel-subheading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.subheading_size }}px;
+    color: {{ block.settings.subheading_color }};
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .ai-carousel-description-{{ ai_gen_id }} {
+    font-size: {{ block.settings.description_size }}px;
+    color: {{ block.settings.description_color }};
+    margin: 0;
+  }
+
+  .ai-carousel-icon-text-{{ ai_gen_id }} {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+  }
+
+  .ai-carousel-icon-{{ ai_gen_id }} {
+    width: {{ block.settings.icon_size }}px;
+    height: {{ block.settings.icon_size }}px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-carousel-icon-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    fill: {{ block.settings.icon_color }};
+  }
+
+  .ai-carousel-icon-label-{{ ai_gen_id }} {
+    font-size: {{ block.settings.icon_text_size }}px;
+    color: {{ block.settings.icon_text_color }};
+  }
+{% endstyle %}
+
+<div class="ai-carousel-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-carousel-container-{{ ai_gen_id }}">
+    {% for i in (1..block.settings.slide_count) %}
+      {% liquid
+        assign heading_key = 'slide_' | append: i | append: '_heading'
+        assign subheading_key = 'slide_' | append: i | append: '_subheading'
+        assign description_key = 'slide_' | append: i | append: '_description'
+        assign icon_text_key = 'slide_' | append: i | append: '_icon_text'
+        assign icon_key = 'slide_' | append: i | append: '_icon'
+      %}
+      
+      {% if block.settings[heading_key] != blank %}
+        <div class="ai-carousel-slide-{{ ai_gen_id }}">
+          <h3 class="ai-carousel-heading-{{ ai_gen_id }}">{{ block.settings[heading_key] }}</h3>
+          <h4 class="ai-carousel-subheading-{{ ai_gen_id }}">{{ block.settings[subheading_key] }}</h4>
+          <p class="ai-carousel-description-{{ ai_gen_id }}">{{ block.settings[description_key] }}</p>
+          <div class="ai-carousel-icon-text-{{ ai_gen_id }}">
+            <div class="ai-carousel-icon-{{ ai_gen_id }}">
+              {% case block.settings[icon_key] %}
+                {% when 'star' %}
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  </svg>
+                {% when 'heart' %}
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                {% when 'check' %}
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                {% when 'info' %}
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                  </svg>
+                {% when 'cart' %}
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+                  </svg>
+              {% endcase %}
+            </div>
+            <span class="ai-carousel-icon-label-{{ ai_gen_id }}">{{ block.settings[icon_text_key] }}</span>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Carousel Slides",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Carousel Settings"
+    },
+    {
+      "type": "range",
+      "id": "slide_count",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 3,
+      "label": "Number of slides"
+    },
+    {
+      "type": "range",
+      "id": "slide_gap",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "default": 20,
+      "label": "Gap between slides",
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "slide_padding",
+      "min": 0,
+      "max": 40,
+      "step": 5,
+      "default": 10,
+      "label": "Carousel padding",
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "default": 8,
+      "label": "Slide border radius",
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Border color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "slide_background_color",
+      "label": "Slide background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 16,
+      "max": 36,
+      "step": 1,
+      "default": 24,
+      "label": "Heading size",
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "min": 14,
+      "max": 28,
+      "step": 1,
+      "default": 18,
+      "label": "Subheading size",
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading color",
+      "default": "#333333"
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "default": 14,
+      "label": "Description size",
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "description_color",
+      "label": "Description color",
+      "default": "#666666"
+    },
+    {
+      "type": "header",
+      "content": "Icon Settings"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "default": 24,
+      "label": "Icon size",
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon color",
+      "default": "#000f9f"
+    },
+    {
+      "type": "range",
+      "id": "icon_text_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "default": 14,
+      "label": "Icon text size",
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "icon_text_color",
+      "label": "Icon text color",
+      "default": "#333333"
+    },
+    {
+      "type": "header",
+      "content": "Slide 1"
+    },
+    {
+      "type": "text",
+      "id": "slide_1_heading",
+      "label": "Heading",
+      "default": "Main Heading"
+    },
+    {
+      "type": "text",
+      "id": "slide_1_subheading",
+      "label": "Subheading",
+      "default": "Another Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "slide_1_description",
+      "label": "Description",
+      "default": "This is a description for slide 1. You can add any text you want here."
+    },
+    {
+      "type": "select",
+      "id": "slide_1_icon",
+      "label": "Icon",
+      "options": [
+        {
+          "value": "star",
+          "label": "Star"
+        },
+        {
+          "value": "heart",
+          "label": "Heart"
+        },
+        {
+          "value": "check",
+          "label": "Check"
+        },
+        {
+          "value": "info",
+          "label": "Info"
+        },
+        {
+          "value": "cart",
+          "label": "Cart"
+        }
+      ],
+      "default": "star"
+    },
+    {
+      "type": "text",
+      "id": "slide_1_icon_text",
+      "label": "Icon text",
+      "default": "Featured item"
+    },
+    {
+      "type": "header",
+      "content": "Slide 2"
+    },
+    {
+      "type": "text",
+      "id": "slide_2_heading",
+      "label": "Heading",
+      "default": "Main Heading"
+    },
+    {
+      "type": "text",
+      "id": "slide_2_subheading",
+      "label": "Subheading",
+      "default": "Another Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "slide_2_description",
+      "label": "Description",
+      "default": "This is a description for slide 2. You can add any text you want here."
+    },
+    {
+      "type": "select",
+      "id": "slide_2_icon",
+      "label": "Icon",
+      "options": [
+        {
+          "value": "star",
+          "label": "Star"
+        },
+        {
+          "value": "heart",
+          "label": "Heart"
+        },
+        {
+          "value": "check",
+          "label": "Check"
+        },
+        {
+          "value": "info",
+          "label": "Info"
+        },
+        {
+          "value": "cart",
+          "label": "Cart"
+        }
+      ],
+      "default": "heart"
+    },
+    {
+      "type": "text",
+      "id": "slide_2_icon_text",
+      "label": "Icon text",
+      "default": "Popular choice"
+    },
+    {
+      "type": "header",
+      "content": "Slide 3"
+    },
+    {
+      "type": "text",
+      "id": "slide_3_heading",
+      "label": "Heading",
+      "default": "Main Heading"
+    },
+    {
+      "type": "text",
+      "id": "slide_3_subheading",
+      "label": "Subheading",
+      "default": "Another Heading"
+    },
+    {
+      "type": "textarea",
+      "id": "slide_3_description",
+      "label": "Description",
+      "default": "This is a description for slide 3. You can add any text you want here."
+    },
+    {
+      "type": "select",
+      "id": "slide_3_icon",
+      "label": "Icon",
+      "options": [
+        {
+          "value": "star",
+          "label": "Star"
+        },
+        {
+          "value": "heart",
+          "label": "Heart"
+        },
+        {
+          "value": "check",
+          "label": "Check"
+        },
+        {
+          "value": "info",
+          "label": "Info"
+        },
+        {
+          "value": "cart",
+          "label": "Cart"
+        }
+      ],
+      "default": "check"
+    },
+    {
+      "type": "text",
+      "id": "slide_3_icon_text",
+      "label": "Icon text",
+      "default": "Best seller"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Carousel Slides"
+    }
+  ]
+}
+{% endschema %}

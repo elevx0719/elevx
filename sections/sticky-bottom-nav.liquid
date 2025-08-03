@@ -1,0 +1,139 @@
+<!-- sections/sticky-bottom-nav.liquid -->
+{% unless template contains 'product' %}
+<style>
+  .sticky-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: white;
+    border-top: 1px solid #e5e5e5;
+    padding: 8px 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+  .nav-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    max-width: 100%;
+    margin: 0 auto;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: inherit;
+    padding: 4px 8px;
+    transition: opacity 0.2s ease;
+  }
+  .nav-item:hover {
+    opacity: 0.7;
+  }
+  .nav-icon {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+  }
+  .nav-text {
+    font-size: 14px;
+    text-align: center;
+    line-height: 1.2;
+  }
+  /* Hide on desktop and tablet - only show on mobile */
+  .sticky-bottom-nav {
+    display: none;
+  }
+  @media (max-width: 768px) {
+    .sticky-bottom-nav {
+      display: block;
+    }
+    
+    .nav-item {
+      padding: 4px 4px;
+    }
+    
+    /* Add padding to body to prevent content from being hidden behind nav on mobile */
+    body {
+      padding-bottom: 80px;
+    }
+  }
+</style>
+<nav class="sticky-bottom-nav">
+  <div class="nav-grid">
+    <!-- Home -->
+    <a href="{{ routes.root_url }}" class="nav-item">
+      <img src="https://cdn.shopify.com/s/files/1/0617/8409/6862/files/home.png?v=1749438141" 
+           alt="Home" 
+           class="nav-icon"
+           loading="lazy">
+    </a>
+    <!-- Shop -->
+    <a href="/collections/all-products" class="nav-item">
+      <img src="https://cdn.shopify.com/s/files/1/0758/9242/4963/files/t-shirt.png?v=1751387849" 
+           alt="Shop" 
+           class="nav-icon"
+           loading="lazy">
+    </a>
+    <!-- Menu -->
+    <a href="#" class="nav-item" id="mobile-menu-trigger">
+      <span class="nav-text">MENU</span>
+    </a>
+    <!-- My Account -->
+    <a href="{{ routes.account_login_url }}" class="nav-item">
+      <img src="https://cdn.shopify.com/s/files/1/0617/8409/6862/files/user.png?v=1749441653" 
+           alt="My Account" 
+           class="nav-icon"
+           loading="lazy">
+    </a>
+    <!-- Cart -->
+    <a href="{{ routes.cart_url }}" class="nav-item">
+      <img src="https://cdn.shopify.com/s/files/1/0617/8409/6862/files/shopping-cart.png?v=1749438141" 
+           alt="Cart" 
+           class="nav-icon"
+           loading="lazy">
+    </a>
+  </div>
+</nav>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const mobileMenuTrigger = document.getElementById('mobile-menu-trigger');
+  
+  if (mobileMenuTrigger) {
+    mobileMenuTrigger.addEventListener('click', function(e) {
+      e.preventDefault(); // Prevent default link behavior
+      
+      // Find the header menu icon and click it
+      const headerMenuIcon = document.querySelector('.header__icon--menu');
+      if (headerMenuIcon) {
+        headerMenuIcon.click();
+      }
+    });
+  }
+});
+</script>
+{% endunless %}
+
+{% schema %}
+{
+  "name": "Sticky Bottom Navigation",
+  "class": "sticky-bottom-navigation",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Bottom Navigation Settings"
+    },
+    {
+      "type": "paragraph",
+      "content": "This section creates a sticky bottom navigation bar that appears on all pages except product pages. The navigation includes Home, Shop, Search, and Cart links with icons."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sticky Bottom Navigation"
+    }
+  ]
+}
+{% endschema %}

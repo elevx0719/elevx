@@ -1,0 +1,449 @@
+{% doc %}
+  @prompt
+    A 3x3 icon text where I can upload svg and also add text, It should be 3x2 and only heading needed. Heading font size should be customisable
+, The section should be full widht of container
+, Instead of svg code allow me to upload svg icons
+
+
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .icon-grid-container-{{ ai_gen_id }} {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .icon-grid-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: {{ block.settings.gap }}px;
+    width: 100%;
+  }
+
+  @media screen and (max-width: 749px) {
+    .icon-grid-{{ ai_gen_id }} {
+      grid-template-columns: repeat(3, 1fr);
+      gap: {{ block.settings.mobile_gap }}px;
+    }
+  }
+
+  .icon-grid-item-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: {{ block.settings.layout }};
+    align-items: center;
+    justify-content: {{ block.settings.alignment }};
+    text-align: {{ block.settings.text_alignment }};
+    gap: {{ block.settings.icon_text_gap }}px;
+    padding: {{ block.settings.item_padding }}px;
+    background-color: {{ block.settings.item_background }};
+    border-radius: {{ block.settings.item_border_radius }}px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .icon-grid-item-{{ ai_gen_id }} {
+      gap: {{ block.settings.mobile_icon_text_gap }}px;
+      padding: {{ block.settings.mobile_item_padding }}px;
+    }
+  }
+
+  .icon-grid-icon-{{ ai_gen_id }} {
+    width: {{ block.settings.icon_size }}px;
+    height: {{ block.settings.icon_size }}px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media screen and (max-width: 749px) {
+    .icon-grid-icon-{{ ai_gen_id }} {
+      width: {{ block.settings.mobile_icon_size }}px;
+      height: {{ block.settings.mobile_icon_size }}px;
+    }
+  }
+
+  .icon-grid-icon-{{ ai_gen_id }} img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .icon-grid-title-{{ ai_gen_id }} {
+    margin: 0;
+    font-size: {{ block.settings.title_size }}px;
+    font-weight: {{ block.settings.title_weight }};
+    color: {{ block.settings.text_color }};
+  }
+
+  @media screen and (max-width: 749px) {
+    .icon-grid-title-{{ ai_gen_id }} {
+      font-size: {{ block.settings.mobile_title_size }}px;
+    }
+  }
+
+  .icon-grid-placeholder-{{ ai_gen_id }} {
+    background-color: #f4f4f4;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+
+  .icon-grid-placeholder-{{ ai_gen_id }} svg {
+    width: 50%;
+    height: 50%;
+    opacity: 0.5;
+  }
+{% endstyle %}
+
+<div class="icon-grid-container-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="icon-grid-{{ ai_gen_id }}">
+    {% for i in (1..6) %}
+      {% assign icon_key = 'icon_' | append: i %}
+      {% assign title_key = 'title_' | append: i %}<div class="icon-grid-item-{{ ai_gen_id }}">
+        <div class="icon-grid-icon-{{ ai_gen_id }}">
+          {% if block.settings[icon_key] != blank %}
+            <img 
+              src="{{ block.settings[icon_key] | img_url: 'master' }}" 
+              alt="{{ block.settings[title_key] | escape }}"
+              loading="lazy"
+              width="{{ block.settings.icon_size }}"
+              height="{{ block.settings.icon_size }}"
+            >
+          {% else %}
+            <div class="icon-grid-placeholder-{{ ai_gen_id }}">
+              {{ 'image' | placeholder_svg_tag }}
+            </div>
+          {% endif %}
+        </div>
+        {% if block.settings[title_key] != blank %}
+          <h3 class="icon-grid-title-{{ ai_gen_id }}">{{ block.settings[title_key] }}</h3>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Icon Grid 3x2",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Settings"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "column",
+          "label": "Vertical (Icon above text)"
+        },
+        {
+          "value": "row",
+          "label": "Horizontal (Icon beside text)"
+        }
+      ],
+      "default": "column"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Content alignment",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Grid gap",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "icon_text_gap",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between icon and text",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "item_padding",
+      "min": 0,
+      "max": 50,
+      "step": 5,
+      "unit": "px",
+      "label": "Item padding",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "item_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Item border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Mobile Settings"
+    },
+    {
+      "type": "range",
+      "id": "mobile_gap",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Mobile grid gap",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "mobile_icon_text_gap",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Mobile space between icon and text",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "mobile_item_padding",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Mobile item padding",
+      "default": 10
+    },
+    {
+      "type": "header",
+      "content": "Icon Settings"
+    },
+    {
+      "type": "range",
+      "id": "icon_size",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "px",
+      "label": "Icon size",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "mobile_icon_size",
+      "min": 15,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Mobile icon size",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Text Settings"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "label": "Heading font size",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "mobile_title_size",
+      "min": 10,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile heading font size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Heading font weight",
+      "options": [
+        {
+          "value": "400",
+          "label": "Regular"
+        },
+        {
+          "value": "500",
+          "label": "Medium"
+        },
+        {
+          "value": "600",
+          "label": "Semibold"
+        },
+        {
+          "value": "700",
+          "label": "Bold"
+        }
+      ],
+      "default": "600"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "item_background",
+      "label": "Item background color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Icon 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_1",
+      "label": "Icon"
+    },
+    {
+      "type": "text",
+      "id": "title_1",
+      "label": "Heading",
+      "default": "Feature 1"
+    },
+    {
+      "type": "header",
+      "content": "Icon 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_2",
+      "label": "Icon"
+    },
+    {
+      "type": "text",
+      "id": "title_2",
+      "label": "Heading",
+      "default": "Feature 2"
+    },
+    {
+      "type": "header",
+      "content": "Icon 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_3",
+      "label": "Icon"
+    },
+    {
+      "type": "text",
+      "id": "title_3",
+      "label": "Heading",
+      "default": "Feature 3"
+    },
+    {
+      "type": "header",
+      "content": "Icon 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_4",
+      "label": "Icon"
+    },
+    {
+      "type": "text",
+      "id": "title_4",
+      "label": "Heading",
+      "default": "Feature 4"
+    },
+    {
+      "type": "header",
+      "content": "Icon 5"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_5",
+      "label": "Icon"
+    },
+    {
+      "type": "text",
+      "id": "title_5",
+      "label": "Heading",
+      "default": "Feature 5"
+    },
+    {
+      "type": "header",
+      "content": "Icon 6"
+    },
+    {
+      "type": "image_picker",
+      "id": "icon_6",
+      "label": "Icon"
+    },
+    {
+      "type": "text",
+      "id": "title_6",
+      "label": "Heading",
+      "default": "Feature 6"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Icon Grid 3x2"
+    }
+  ]
+}
+{% endschema %}
