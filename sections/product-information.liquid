@@ -61,36 +61,13 @@
         class="product-information__media"
         data-testid="product-information-media"
       >
-        {%- comment -%}
-{%- content_for 'block',
-  type: '_product-media-gallery',
-  id: 'media-gallery',
-  closest.product: closest.product
--%}
-{%- endcomment -%}
-    <div id="splide-product-gallery" class="splide" data-section-id="{{ section.id }}">
-    <div class="splide__track">
-      <ul class="splide__list">
-        {% for media in product.media %}
-          <li class="splide__slide">
-          <a
-            href="{{ media.preview_image | img_url: '2048x2048' }}"
-            data-fancybox="gallery-{{ section.id }}"
-            data-caption="{{ media.alt | escape }}"
-          >
-            <img
-              src="{{ media.preview_image | img_url: '1024x1024' }}"
-              alt="{{ media.alt | escape }}"
-              loading="lazy"
-            >
-          </a>
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-  </div>
-</div>
-{% endcapture %}
+        {%- content_for 'block',
+          type: '_product-media-gallery',
+          id: 'media-gallery',
+          closest.product: closest.product
+        -%}
+      </div>
+    {% endcapture %}
 
     {% capture details %}
       {% content_for 'block',
@@ -304,87 +281,7 @@
   body:has(#header-group #header-component[data-sticky-state='active']) .product-details.sticky-content--desktop {
     --sticky-header-offset: var(--header-height);
   }
-
-  
-  /* === Splide Product Image Gallery === */
-  #splide-product-gallery {
-    display        : block !important;
-    width          : 100%;
-    overflow       : hidden;
-    border-radius  : 8px;
-    min-height     : 300px;
-  }
-
-  #splide-product-gallery .splide__slide {
-    display         : flex;
-    justify-content : center;
-    align-items     : center;
-    margin          : 0 !important;
-    padding         : 0 !important;
-  }
-
-  #splide-product-gallery img {
-    max-width    : 100%;
-    max-height   : 400px; /* limit image height */
-    height       : auto;
-    object-fit   : contain;
-    border-radius: 6px;
-  }
-
-  @media screen and (max-width: 749px) {
-    #splide-product-gallery {
-      padding-inline: 1rem;
-    }
-  }
-
-  @media screen and (min-width: 1024px) {
-    /* Collapse grid & full‑bleed */
-    .product-information__grid {
-      grid-template-columns: 1fr !important;
-    }
-    .product-information__media,
-    .product-details {
-      grid-column: 1 / -1 !important;
-    }
-    #splide-product-gallery {
-      position     : relative !important;
-      left         : 50%     !important;
-      width        : 100vw   !important;
-      margin-left  : -50vw   !important;
-      margin-right : -50vw   !important;
-      padding      : 0       !important;
-    }
-    #splide-product-gallery .splide__list {
-      gap: 0 !important;
-    }
-  }
-       /* Fancybox thumbnail strip – smooth swipe & snap */
-   .fancybox__thumbs--modern,
-   .fancybox__thumbs {
-     display             : flex    !important;
-     justify-content     : center  !important;
-     align-items         : center  !important;
-     gap                 : 8px     !important;
-     padding             : 0.5rem  0 !important;
-     overflow-x          : auto    !important;
-     -webkit-overflow-scrolling: touch !important;
-     scroll-snap-type    : x mandatory !important;
-   }
-   .fancybox__thumb {
-     width               : 60px    !important;
-     height              : 60px    !important;
-     border-radius       : 6px     !important;
-     overflow            : hidden  !important;
-     box-shadow          : var(--fancybox-shadow, 0 2px 8px rgba(0,0,0,0.15)) !important;
-     scroll-snap-align   : center  !important;
-     transition          : transform 0.3s ease !important;
-   }
-   .fancybox__thumb:hover,
-   .fancybox__thumb--current {
-     transform           : scale(1.1) !important;
-   }
-
- {% endstylesheet %}
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -491,29 +388,3 @@
   "presets": []
 }
 {% endschema %}
-
-
-{% if template contains 'product' %}
-  <div class="custom-mobile-sticky-bar">
-    <button id="custom-sticky-buy-now" class="custom-sticky-btn buy-now">
-      BUY IT NOW
-      <span class="sticky-btn-subtext">(Click to Select Size)</span>
-    </button>
-    <button id="custom-sticky-add-to-cart" class="custom-sticky-btn">
-      ADD TO CART
-      <span class="sticky-btn-subtext">(Click to Select Size)</span>
-    </button>
-  </div>
-
-  <!-- Bottom Sheet for Size Selection -->
-  <div id="sticky-size-sheet" class="sticky-size-sheet-bg">
-    <div class="sticky-size-sheet">
-      <div class="sticky-size-sheet-header">
-        <span class="sticky-size-sheet-title">SELECT SIZE</span>
-        <span id="sticky-size-close" class="sticky-size-sheet-close">&times;</span>
-      </div>
-      <div id="sticky-size-options" class="sticky-size-options"></div>
-      <a href="#" id="size-chart-link" style="color:#fff;text-decoration:underline;font-size:14px;">SIZE CHART</a>
-    </div>
-  </div>
-{% endif %}

@@ -511,6 +511,10 @@ p:empty {
   }
 }
 
+.contents {
+  display: contents;
+}
+
 .flex {
   display: flex;
   gap: var(--gap-md);
@@ -604,6 +608,10 @@ p:empty {
 
 .text-inherit {
   color: inherit;
+}
+
+.user-select-text {
+  user-select: text;
 }
 
 .justify-left {
@@ -725,6 +733,16 @@ body,
   color: var(--color, var(--color-foreground));
 }
 
+/* Ensure inputs with type presets maintain minimum 16px on mobile to prevent iOS zoom */
+@media screen and (max-width: 1200px) {
+  input.paragraph.paragraph,
+  input.paragraph.paragraph:not([type]),
+  textarea.paragraph.paragraph,
+  select.paragraph.paragraph {
+    font-size: max(1rem, var(--font-paragraph--size));
+  }
+}
+
 .paragraph > small {
   font-size: smaller;
 }
@@ -744,6 +762,14 @@ h1,
   color: var(--color, var(--font-h1-color));
 }
 
+@media screen and (max-width: 1200px) {
+  input.h1.h1,
+  textarea.h1.h1,
+  select.h1.h1 {
+    font-size: max(1rem, var(--font-h1--size));
+  }
+}
+
 h2,
 .h2.h2,
 .text-block.h2 > * {
@@ -755,6 +781,14 @@ h2,
   letter-spacing: var(--font-h2--letter-spacing);
   text-transform: var(--font-h2--case);
   color: var(--color, var(--font-h2-color));
+}
+
+@media screen and (max-width: 1200px) {
+  input.h2.h2,
+  textarea.h2.h2,
+  select.h2.h2 {
+    font-size: max(1rem, var(--font-h2--size));
+  }
 }
 
 h3,
@@ -771,6 +805,14 @@ h3,
   color: var(--color, var(--font-h3-color));
 }
 
+@media screen and (max-width: 1200px) {
+  input.h3,
+  textarea.h3,
+  select.h3 {
+    font-size: max(1rem, var(--font-h3--size));
+  }
+}
+
 h4,
 .h4.h4,
 .text-block.h4 > * {
@@ -782,6 +824,14 @@ h4,
   letter-spacing: var(--font-h4--letter-spacing);
   text-transform: var(--font-h4--case);
   color: var(--color, var(--font-h4-color));
+}
+
+@media screen and (max-width: 1200px) {
+  input.h4.h4,
+  textarea.h4.h4,
+  select.h4.h4 {
+    font-size: max(1rem, var(--font-h4--size));
+  }
 }
 
 h5,
@@ -797,6 +847,14 @@ h5,
   color: var(--color, var(--font-h5-color));
 }
 
+@media screen and (max-width: 1200px) {
+  input.h5.h5,
+  textarea.h5.h5,
+  select.h5.h5 {
+    font-size: max(1rem, var(--font-h5--size));
+  }
+}
+
 h6,
 .h6.h6,
 .text-block.h6 > * {
@@ -808,6 +866,14 @@ h6,
   letter-spacing: var(--font-h6--letter-spacing);
   text-transform: var(--font-h6--case);
   color: var(--color, var(--font-h6-color));
+}
+
+@media screen and (max-width: 1200px) {
+  input.h6.h6,
+  textarea.h6.h6,
+  select.h6.h6 {
+    font-size: max(1rem, var(--font-h6--size));
+  }
 }
 
 :first-child:is(.h1, .h2, .h3, .h4, .h5, .h6) {
@@ -1470,8 +1536,24 @@ media-gallery {
   }
 }
 
+@media screen and (min-width: 750px) {
+  /* The desktop layout doesn't stretch vertically as it should in Safari */
+  :not(.dialog-zoomed-gallery) > .product-media-container {
+    height: var(--constrained-height, auto);
+  }
+
+  .quick-add-modal__content .product-media-container {
+    --constrained-height: auto;
+  }
+}
+
 media-gallery:where(.media-gallery--grid) .media-gallery__grid {
   display: none;
+}
+
+media-gallery.media-gallery--grid .media-gallery__grid .product-media-container {
+  /* Needed for safari to stretch to full grid height */
+  height: 100%;
 }
 
 .product-media :is(deferred-media, product-model) {
@@ -3485,6 +3567,25 @@ slideshow-component[autoplay] slideshow-controls {
   }
 }
 
+/* Slideshow control shape styles */
+.button-unstyled.slideshow-control.slideshow-control--shape-square,
+.button-unstyled.slideshow-control.slideshow-control--shape-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  background-color: var(--color-primary-button-background);
+  color: var(--color-primary-button-text);
+}
+
+.button-unstyled.slideshow-control.slideshow-control--shape-circle {
+  border-radius: 50%;
+}
+
+.button-unstyled.slideshow-control.slideshow-control--shape-square {
+  border-radius: 0;
+}
+
 .slideshow-control .icon-caret {
   rotate: -90deg;
 }
@@ -3607,6 +3708,11 @@ slideshow-arrows {
   }
 }
 
+slideshow-arrows:has(.slideshow-control--shape-square),
+slideshow-arrows:has(.slideshow-control--shape-circle) {
+  mix-blend-mode: normal;
+}
+
 slideshow-component[disabled='true'] slideshow-arrows {
   display: none;
 }
@@ -3714,7 +3820,6 @@ slideshow-arrows .slideshow-control.slideshow-control--style-none {
 
   @media screen and (max-width: 749px) {
     --resource-list-mobile-gap-max: 12px;
-    
   }
 
   @container resource-list (max-width: 749px) {
@@ -4090,12 +4195,6 @@ text-component {
   }
 }
 
-/* These are sections with placeholders that we don't want to have appear on the storefront when empty */
-.shopify-section:has(.in-onboarding-state) {
-  /* stylelint-disable-next-line declaration-no-important */
-  display: none !important;
-}
-
 .product-card:hover,
 .collection-card:hover,
 .resource-card:hover,
@@ -4118,167 +4217,33 @@ text-component {
   box-shadow: none;
 }
 
-
-/* css for stickey add to cart bar */
-
-@media (max-width: 767px) {
-  .custom-mobile-sticky-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100vw;
-    background: #181818;
-    display: flex;
-    z-index: 1111;
-    border-top: 1.5px solid #242424;
-    padding: 0;
-  }
-  .custom-sticky-btn {
-    width: 50%;
-    background: #fff;
-    color: #181818;
-    border: none;
-    border-right: 1.5px solid #242424;
-    font-size: 1.08rem;
-    font-weight: 600;
-    padding: 16px 0 7px 0;
-    text-align: center;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    letter-spacing: 0.07em;
-    position: relative;
-    transition: background .14s;
-  }
-  .custom-sticky-btn:last-child {
-    border-right: none;
-  }
-  .custom-sticky-btn.buy-now {
-    border-right: 1.5px solid #242424;
-  }
-  .sticky-btn-subtext {
-    font-size: 11px;
-    color: #666;
-    margin-top: 4px;
-    font-weight: 400;
-    letter-spacing: 0.03em;
-  }
-
-  .sticky-size-sheet-bg {
-    display: none;
-    position: fixed;
-    left: 0; right: 0; bottom: 0; top: 0;
-    background: rgba(0,0,0,0.38);
-    z-index: 99999;
-    align-items: flex-end;
-    justify-content: center;
-    transition: background 0.15s;
-  }
-  .sticky-size-sheet-bg.active {
-    display: flex;
-  }
-  .sticky-size-sheet {
-    width: 100vw;
-    max-width: 100vw;
-    border-radius: 18px 18px 0 0;
-    background: #181818;
-    color: #fff;
-    box-shadow: 0 -2px 28px 0 rgba(0,0,0,0.22);
-    padding: 0 0 10px 0;
-    animation: slideUp 0.22s cubic-bezier(.62,.07,.88,.93);
-  }
-  @keyframes slideUp {
-    from { transform: translateY(120%);}
-    to { transform: translateY(0);}
-  }
-  .sticky-size-sheet-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px 18px 0 18px;
-  }
-  .sticky-size-sheet-title {
-    font-size: 17px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    width: 100%;
-    text-align: center;
-  }
-  .sticky-size-sheet-close {
-    font-size: 26px;
-    line-height: 1;
-    cursor: pointer;
-    color: #bbb;
-    font-weight: 400;
-  }
-  .sticky-size-options {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px 0;
-    justify-items: center;
-    padding: 22px 14px 0 14px;
-  }
-  .sticky-size-option-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 16px;
-    font-weight: 500;
-    background: none;
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    padding: 0;
-    transition: color 0.12s;
-    outline: none;
-    position: relative;
-    min-width: 74px;
-  }
-  .sticky-size-option-btn.selected {
-    color: #181818;
-    font-weight: 700;
-    background: #fff;
-    border-radius: 10px;
-    padding: 5px 2px 4px 2px;
-  }
-  .sticky-size-option-btn[disabled] {
-    color: #686868 !important;
-    cursor: not-allowed;
-    background: none;
-    font-weight: 400;
-  }
-  .notify-me-label {
-    font-size: 11px;
-    color: #b6b6b6;
-    letter-spacing: 0.03em;
-    margin-top: 2px;
-    font-weight: 400;
-  }
-  #size-chart-link {
-    display: block;
-    width: 100%;
-    text-align: center;
-    margin: 18px 0 6px 0;
-    color: #fff !important;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-decoration: underline !important;
-  }
-}
-@media (min-width: 768px) {
-  .custom-mobile-sticky-bar, .sticky-size-sheet-bg { display: none !important; }
-}
-
-@media (max-width: 768px) {
- .add-to-cart-button {
-    text-transform: var(--button-text-case-primary);
-   display: none;
-  }
-
- .buy-buttons-block {
-    width: 100%;
-   display: none;
+/* Prevent iOS zoom on input focus by ensuring minimum 16px font size on mobile */
+@media screen and (max-width: 1200px) {
+  input,
+  textarea,
+  select,
+  /* Higher specificity to override type preset classes like .paragraph, .h1, etc. */
+  .paragraph.paragraph input,
+  .paragraph.paragraph textarea,
+  .paragraph.paragraph select,
+  .h1.h1 input,
+  .h1.h1 textarea,
+  .h1.h1 select,
+  .h2.h2 input,
+  .h2.h2 textarea,
+  .h2.h2 select,
+  .h3.h3 input,
+  .h3.h3 textarea,
+  .h3.h3 select,
+  .h4.h4 input,
+  .h4.h4 textarea,
+  .h4.h4 select,
+  .h5.h5 input,
+  .h5.h5 textarea,
+  .h5.h5 select,
+  .h6.h6 input,
+  .h6.h6 textarea,
+  .h6.h6 select {
+    font-size: max(1rem, 100%);
   }
 }
